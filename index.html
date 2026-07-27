@@ -422,22 +422,24 @@ function scrWalk(){
 
 function drawMap(){
   var box=document.getElementById('mapbox'); if(!box) return;
-  var w=WALK[G.wi], target=SPOTS[w.to], from=SPOTS[SPOTS[w.to].id-1]||SPOTS[0];
-  var pts=[from,target]; if(pos) pts.push(pos);
-  var minLa=1e9,maxLa=-1e9,minLo=1e9,maxLo=-1e9;
-  for(var i=0;i<pts.length;i++){ minLa=Math.min(minLa,pts[i].lat);maxLa=Math.max(maxLa,pts[i].lat);
-    minLo=Math.min(minLo,pts[i].lng);maxLo=Math.max(maxLo,pts[i].lng); }
-  var pad=0.0004; minLa-=pad;maxLa+=pad;minLo-=pad;maxLo+=pad;
-  var W=280,H=150;
-  function px(p){ return {x:((p.lng-minLo)/(maxLo-minLo))*W, y:H-((p.lat-minLa)/(maxLa-minLa))*H}; }
-  var a=px(from), b=px(target);
-  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">';
-  s+='<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="#C9C3B0" stroke-width="6" stroke-linecap="round"/>';
-  s+='<circle cx="'+b.x+'" cy="'+b.y+'" r="11" fill="none" stroke="#41543F" stroke-width="1.4" stroke-dasharray="3 3"/>';
-  s+='<text x="'+b.x+'" y="'+(b.y+4)+'" text-anchor="middle" font-size="11" fill="#41543F">'+target.id+'</text>';
-  if(pos){ var p=px(pos);
-    s+='<circle cx="'+p.x+'" cy="'+p.y+'" r="9" fill="#6E8B74" opacity=".25"/>';
-    s+='<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="#41543F"/>'; }
+  var target=SPOTS[WALK[G.wi].to];
+  var W=280,H=150, cx=W/2, cy=H/2;
+  var s='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-height:170px;display:block">';
+  if(pos){
+    var mLat=111320, mLng=111320*Math.cos(pos.lat*Math.PI/180);
+    var dx=(target.lng-pos.lng)*mLng, dy=(target.lat-pos.lat)*mLat;
+    var d=Math.sqrt(dx*dx+dy*dy);
+    var sc = d>1 ? Math.min(52/d, 1.2) : 1;
+    var tx=cx+dx*sc, ty=cy-dy*sc;
+    s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+tx.toFixed(1)+'" y2="'+ty.toFixed(1)+'" stroke="#C9C3B0" stroke-width="5" stroke-linecap="round"/>';
+    s+='<circle cx="'+tx.toFixed(1)+'" cy="'+ty.toFixed(1)+'" r="12" fill="none" stroke="#41543F" stroke-width="1.4" stroke-dasharray="3 3"/>';
+    s+='<text x="'+tx.toFixed(1)+'" y="'+(ty+4).toFixed(1)+'" text-anchor="middle" font-size="11" fill="#41543F">'+target.id+'</text>';
+    s+='<circle cx="'+cx+'" cy="'+cy+'" r="10" fill="#6E8B74" opacity=".2"/>';
+    s+='<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="#41543F"/>';
+    s+='<text x="'+cx+'" y="'+(cy+22)+'" text-anchor="middle" font-size="10" fill="#A29C88">나</text>';
+  } else {
+    s+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" font-size="11" fill="#A29C88">위치를 찾는 중</text>';
+  }
   s+='</svg>';
   box.innerHTML=s;
 }
@@ -450,7 +452,8 @@ function tickWalk(){
   if(!de) return;
   if(d!==null){
     de.innerHTML='남은 거리 <b>'+(Math.round(d/10)*10)+'m</b>';
-    ae.textContent='GPS 오차 약 '+Math.round(pos.acc)+'m';
+    ae.textContent = pos.acc>60 ? ('GPS 오차 약 '+Math.round(pos.acc)+'m — 위치가 부정확합니다. 폰에서 열어주세요')
+                                : ('GPS 오차 약 '+Math.round(pos.acc)+'m');
     drawMap();
     if(d<=sp.r){ return arriveNow(); }
   } else {
