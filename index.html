@@ -83,6 +83,8 @@ textarea{width:100%;height:150px;font-family:ui-monospace,Menlo,monospace;font-s
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
+var VERSION = "v0.2.0";
+
 /* ============================================================
    1) 좌표 — ?survey=1 로 현장에서 수집한 값을 여기 붙여넣으세요
    ============================================================ */
@@ -321,7 +323,7 @@ function scrTitle(){
    '<p class="small" style="margin:30px 0 6px">실제로 사람이 사는 집입니다.<br>거주자에게 말을 걸지 말고, 조용히 봐주세요.<br>이어폰을 권합니다. 차와 계단을 조심하세요.</p>'+
    '<button class="btn" id="go">걷기 시작</button>'+
    (load()? '<button class="btn ghost sm" id="cont">이어서 하기</button>':'')+
-   '<p class="small" style="margin-top:24px">'+(GHOST?'유령 모드 (GPS 없이 진행)':'')+(SURVEY?'좌표 수집 모드':'')+'</p>');
+   '<p class="small" style="margin-top:24px">'+VERSION+(GHOST?' · 유령 모드 (GPS 없이 진행)':'')+(SURVEY?' · 좌표 수집 모드':'')+'</p>');
   document.getElementById('go').onclick=function(){ localStorage.removeItem('im_save'); startGPS(); wake(); scrIntro(); };
   var c=document.getElementById('cont'); if(c) c.onclick=function(){ G=load(); startGPS(); wake(); route(); };
 }
@@ -415,6 +417,7 @@ function scrWalk(){
   h+='<div id="dist">남은 거리 <b>--</b></div><div id="acc"></div>';
   h+='<div class="toast" id="toast">그 말이 돌았다 — 재개발 <b>'+(G.dR>=0?'+':'')+G.dR+'</b> · 집값 <b>'+(G.dV>=0?'+':'')+(G.dV/10).toFixed(1)+'억</b><br>'+(S[G.wi].echo||'')+'</div>';
   h+='<div id="arrivebox"></div>';
+  h+='<div id="mockbox"></div>';
   html(h);
   drawMap();
   tickWalk();
@@ -455,6 +458,7 @@ function tickWalk(){
     ae.textContent = pos.acc>60 ? ('GPS 오차 약 '+Math.round(pos.acc)+'m — 위치가 부정확합니다. 폰에서 열어주세요')
                                 : ('GPS 오차 약 '+Math.round(pos.acc)+'m');
     drawMap();
+    if(d>500){ showMock(); }
     if(d<=sp.r){ return arriveNow(); }
   } else {
     de.innerHTML='<b style="font-size:14px">위치를 찾는 중…</b>';
@@ -468,6 +472,30 @@ function tickWalk(){
     document.getElementById('bk').onclick=arriveNow;
   }
   setTimeout(tickWalk, 1200);
+}
+function makeMockCourse(){
+  if(!pos) return false;
+  var mLat=1/111320, mLng=1/(111320*Math.cos(pos.lat*Math.PI/180));
+  var off=[[0,0],[0,-90],[0,-190],[110,-120],[-120,-60],[40,-140]];
+  for(var i=0;i<6;i++){
+    SPOTS[i].lat = pos.lat + off[i][0]*mLat;
+    SPOTS[i].lng = pos.lng + off[i][1]*mLng;
+    SPOTS[i].r = 20;
+  }
+  localStorage.setItem('im_spots', JSON.stringify(SPOTS));
+  return true;
+}
+function showMock(){
+  var mb=document.getElementById('mockbox'); if(!mb || mb.innerHTML) return;
+  mb.innerHTML='<p class="small" style="margin-top:6px">지점이 500m 넘게 떨어져 있습니다. 현장이 아니라면 지금 위치 기준으로 테스트 코스를 만들 수 있습니다.</p>'+
+    '<button class="btn ghost sm" id="mk">여기 기준으로 테스트 코스 만들기</button>';
+  document.getElementById('mk').onclick=function(){
+    if(!makeMockCourse()){ alert('아직 위치를 못 잡았습니다'); return; }
+    var here={lat:pos.lat,lng:pos.lng};
+    SPOTS[WALK[G.wi].to].lat = here.lat + 0.0008;
+    localStorage.setItem('im_spots', JSON.stringify(SPOTS));
+    scrWalk();
+  };
 }
 function showMid(txt){
   html('<p class="recall serif">'+txt+'</p><p class="tapHint">화면을 누르면 계속 걷습니다</p>');
@@ -510,6 +538,7 @@ function drawSurvey(){
   if(!SURVEY) return;
   var st=JSON.parse(localStorage.getItem('im_survey')||'{}');
   var h='<h1 style="font-size:22px">좌표 수집</h1>';
+  h+='<p class="small">'+VERSION+'</p>';
   h+='<p class="mid">각 지점에 서서 버튼을 누르세요.<br>GPS 오차가 10m 아래로 내려갔을 때 누르면 좋습니다.</p>';
   h+='<p class="mid" id="now">'+(pos?('현재 '+pos.lat.toFixed(6)+', '+pos.lng.toFixed(6)+' · 오차 '+Math.round(pos.acc)+'m'):'위치를 찾는 중…')+'</p>';
   for(var i=0;i<SPOTS.length;i++){
