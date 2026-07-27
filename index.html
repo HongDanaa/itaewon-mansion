@@ -522,6 +522,8 @@ function drawSurvey(){
   h+='<textarea id="code" readonly>'+code+'</textarea>';
   h+='<button class="btn sm" id="cp">코드 복사</button>';
   h+='<button class="btn ghost sm" id="apply">이 좌표로 바로 플레이</button>';
+  h+='<p class="small" style="margin-top:22px">현장에 못 갔을 때 — 지금 있는 곳 주변에 지점 6개를 임시로 흩어놓고 걸어서 테스트합니다. (구간당 60~120m, 반경 20m)</p>';
+  h+='<button class="btn sm" id="mock">여기 기준으로 테스트 코스 만들기</button>';
   h+='<button class="btn ghost sm" id="clr">수집 초기화</button>';
   html(h);
   var bs=scr.querySelectorAll('.srow button');
@@ -543,7 +545,20 @@ function drawSurvey(){
     localStorage.setItem('im_spots', JSON.stringify(SPOTS));
     location.href = location.pathname;
   };
-  document.getElementById('clr').onclick=function(){ localStorage.removeItem('im_survey'); drawSurvey(); };
+  document.getElementById('mock').onclick=function(){
+    if(!pos){ alert('아직 위치를 못 잡았습니다. 하늘이 트인 곳에서 잠시 기다려 주세요.'); return; }
+    var mLat=1/111320, mLng=1/(111320*Math.cos(pos.lat*Math.PI/180));
+    var off=[[0,0],[0,-90],[0,-190],[110,-120],[-120,-60],[40,-140]];
+    for(var i=0;i<6;i++){
+      SPOTS[i].lat = pos.lat + off[i][0]*mLat;
+      SPOTS[i].lng = pos.lng + off[i][1]*mLng;
+      SPOTS[i].r = 20;
+    }
+    localStorage.setItem('im_spots', JSON.stringify(SPOTS));
+    localStorage.removeItem('im_save');
+    location.href = location.pathname;
+  };
+  document.getElementById('clr').onclick=function(){ localStorage.removeItem('im_survey'); localStorage.removeItem('im_spots'); drawSurvey(); };
 }
 
 /* ============================================================
