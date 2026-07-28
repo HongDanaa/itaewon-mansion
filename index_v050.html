@@ -19,9 +19,9 @@ body{min-height:100vh;min-height:100dvh;}
 .serif{font-family:"Apple SD Gothic Neo",Georgia,"Noto Serif KR",serif}
 #band{position:sticky;top:0;z-index:20;background:var(--paper);padding:10px 0 6px;}
 #bandIn{background:var(--green);color:var(--paper);display:flex;justify-content:space-between;
-  align-items:center;padding:7px 16px;font-size:12px;transform-origin:center;
-  transform:rotate(-1.5deg) scale(1.06);transition:transform .8s ease, filter .8s ease;}
-#bandIn b{font-weight:600;font-size:13px;transition:font-size .5s}
+  align-items:center;padding:12px 16px;font-size:13.5px;transform-origin:center;
+  transform:rotate(0deg) scale(1.02);transition:transform .9s ease, filter .8s ease;}
+#bandIn b{font-weight:700;font-size:15px;transition:font-size .5s}
 .wrap{padding:0 20px}
 h1{font-size:30px;font-weight:600;letter-spacing:-.5px;margin:38px 0 6px}
 p{line-height:1.75;margin:0 0 14px}
@@ -64,6 +64,52 @@ textarea{width:100%;height:150px;font-family:ui-monospace,Menlo,monospace;font-s
   border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff;color:#222}
 .fade{animation:f .45s ease}
 @keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* v0.4.0 */
+.wrap{min-height:78dvh}
+html,body{transition:background-color .5s ease}
+#band,#bandIn{transition:background-color .5s ease, transform .8s ease, filter .8s ease}
+.fade{animation:f .55s ease}
+body.night{background:#26241F}
+body.night #band{background:#26241F}
+body.night .recall,body.night .see,body.night h1{color:#F4F1E8}
+body.night .tapHint,body.night .small{color:#8A8574}
+body.night .mid{color:#B8B29E}
+body.night p{color:#DDD8C8}
+body.night .btn.ghost{color:#B9C9B4;border-color:#4a4740}
+.ch.big{text-align:left;border-width:1.5px;border-color:#9C9683;background:#F7F5EE}
+.ch.mid{text-align:left;border-color:#CFC9B6}
+.ch.small{text-align:right;background:var(--paper);border-color:#E0DBC9;color:#6B675A;
+  width:90%;margin-left:10%;padding:12px 15px;font-size:14px;line-height:1.65}
+.settleMain{font-size:22px;line-height:1.8;margin:90px 0 40px;text-align:center;white-space:pre-line}
+.settleNum{font-size:15px;text-align:center;color:#B8B29E;line-height:2}
+
+/* 챕터 카드 */
+.chapNum{font-size:13px;letter-spacing:6px;color:#8A8574;text-align:center;margin:70px 0 26px}
+.chapCard{animation:unfold .8s cubic-bezier(.2,.7,.2,1)}
+@keyframes unfold{from{clip-path:inset(0 50% 0 50%);opacity:0}to{clip-path:inset(0 0 0 0);opacity:1}}
+.chapPort{width:120px;height:120px;border-radius:50%;margin:0 auto 22px;display:flex;align-items:center;
+  justify-content:center;border:1.5px solid var(--green);background:#33312A;color:#B9C9B4;
+  font-size:40px;font-weight:600;overflow:hidden}
+.chapPort img{width:100%;height:100%;object-fit:cover}
+.chapName{font-size:26px;font-weight:600;color:#F4F1E8;text-align:center;letter-spacing:1px;
+  animation:sprd 1.1s ease}
+@keyframes sprd{from{letter-spacing:14px;opacity:0}to{letter-spacing:1px;opacity:1}}
+.chapSub{font-size:14px;color:#B8B29E;text-align:center;margin-top:14px;line-height:1.7}
+
+#app{min-height:100dvh;transition:background-color .5s ease}
+#band{transition:opacity .7s ease, max-height .7s ease, padding .7s ease}
+#band.hidden{opacity:0;max-height:0;padding:0;overflow:hidden;pointer-events:none}
+.titleWrap{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:14vh}
+.tAddr{font-size:12px;letter-spacing:3px;color:#8A8574;margin-bottom:30px}
+.tMain{font-size:42px;font-weight:700;color:#F4F1E8;letter-spacing:2px;line-height:1.25;margin:0;
+  animation:tin 1.4s cubic-bezier(.2,.7,.2,1)}
+@keyframes tin{from{letter-spacing:18px;opacity:0}to{letter-spacing:2px;opacity:1}}
+.tRule{width:34px;height:2px;background:var(--green);margin:26px 0 22px;transform:rotate(-1.5deg)}
+.tSub{font-size:13.5px;color:#B8B29E;line-height:1.9;margin:0 0 44px}
+.tBtns{width:100%;max-width:300px}
+.tNote{font-size:11.5px;color:#7A7568;line-height:1.85;margin-top:34px;letter-spacing:.2px}
+.tVer{font-size:11px;color:#57534A;margin-top:22px}
 </style>
 </head>
 <body>
@@ -71,7 +117,7 @@ textarea{width:100%;height:150px;font-family:ui-monospace,Menlo,monospace;font-s
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v0.3.0";
+var VERSION = "v0.5.0";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -109,7 +155,7 @@ var WALK = [
 /* ===== 세션 데이터 =====
 choices: [텍스트, 크기, dR, dV(0.1억), 속말, 특수] */
 var S = [
-{ spot:0, name:"파프리 공인중개사", ini:"파",
+{ spot:0, name:"파프리 공인중개사", ini:"파", sub:"이 골목 삼십 년.<br>당신 건물만 빼고 다 파는 사람.",
   see:"간판을 보세요. 파프리 공인중개사.\n이 골목에서 삼십 년 된 이름입니다.\n\n유리문의 매물 종이들을 보세요.\n이 골목 건물이 다 붙어 있습니다.\n\n당신 건물만 없습니다.",
   recall:["이 사무소가 생긴 게 우리 건물 준공하던 해다.\n저 사람이 첫 세입자를 붙여줬다.",
 "계약서 쓰던 날 저 사람이 그랬다.\n사장님, 이 건물 1층이 골목서 제일 넓네요.\n\n나는 그 말을 삼십 년 기억한다.\n저 사람은 기억 못 할 거다."],
@@ -137,7 +183,7 @@ var S = [
         '"그 아주머니한테 그렇게 말씀하시지 그러셨어요."']},
    {say:'"가시기 전에 하나만요.\n나 장부에 그 건물을 주소로 안 적어놨어요.\n손님들이 그 이름으로 물어보거든요. 주소보다 그게 빨라서.\n\n…오늘은 안 알려드릴래요. 어차피 듣게 되실 거예요."',
     ch:[["바꿔 적어. 김씨 건물이라고.","big",1,2,0],
-        ["맘대로 적어. 장부가 값 매기나.","mid",1,0,0],
+        ["맘대로 적어. 장부가 값 매기나.","mid",0,0,0],
         ["…나 그 이름 압니다. 삼십 년 됐어요.","small",0,0,1]],
     re:['"고쳐드릴게요. 근데 손님들 입은 내가 못 고쳐요."',
         '"매겨요. 이름이 값을 매겨요."',
@@ -145,7 +191,7 @@ var S = [
    {say:'"다녀오세요.\n골목이 좁아서, 사장님 말이 사장님보다 빨라요.\n\n저녁에 다시 들르세요.\n어차피 나한테 다 들어와요."', ch:[], re:[]}
   ]},
 
-{ spot:1, name:"최고령 주민", ini:"주",
+{ spot:1, name:"최고령 주민", ini:"주", sub:"골목 사십 년.<br>김씨보다 먼저 온 사람.",
   see:"길 건너에서 1층을 보세요.\n언덕에 눌려서, 반쯤 파묻혀 있습니다.\n\n저 1층이 등기부상 이 골목에서 제일 넓습니다.\n그렇게 보입니까?",
   recall:["경사지에서 평수를 뽑으려니\n건물이 언덕 아래로 몸을 내밀어야 했다.",
 "등기부에는 내가 이겼다고 적혀 있다. 골목에서 제일 넓다고.\n근데 겉에서 보면 제일 좁아 보이는 게 저 1층이다.",
@@ -175,7 +221,7 @@ var S = [
    {say:'"가봐.\n골목 좁아서, 자네 말은 자네보다 빨리 돌아."', ch:[], re:[], altElder:'"김씨. 나 자네한테 서운한 거 아니야.\n자네 입으로 그 말 듣고 나니까, 이제 안 붙들고 있어도 되겠다 싶어서.\n\n마흔 해 붙들었으면 오래 붙들었지."'}
   ]},
 
-{ spot:2, name:"마지막 세입자", ini:"세",
+{ spot:2, name:"마지막 세입자", ini:"세", sub:"1층에서 이십 년.<br>올봄에 나간 사람.",
   see:"골목 끝에서 건물의 왼쪽 얼굴을 보세요.\n1층 유리 안에 커튼이 쳐져 있습니다.\n\n비어 있습니다. 올봄부터.",
   recall:["사람들이 우리 집을 언덕집이라고 한다.\n언덕은 무슨. 이 길로 와보라고 하면 다들 말이 없다.\n이게 평지지.",
 "손님이 오면 꼭 이 길로 데려왔다.\n가파른 길은 삼 분이지만 그 길로 오면 우리 집이 언덕집이 된다.\n팔 분이 걸려도 이 길이다.",
@@ -190,7 +236,7 @@ var S = [
         '"다 알았어요. 사장님만 계속 물어보셨죠, 평지죠 하고.\n…아, 저 전봇대 옆 의자 제가 내놓은 거예요.\n이십 년 동안 한 번도 안 앉으셨지만요."']},
    {say:'"저 열쇠 돌려드리러 왔어요.\n\n사장님, 저 재작년에 5년 계약 하자고 했잖아요.\n세 번 여쭤봤고, 세 번 다 생각해보자고 하셨어요.\n저 2년 기다리다 나왔어요.\n\n…화내는 거 아니에요. 그냥 아셨으면 해서요."',
     ch:[["재개발이 걸렸는데 무슨 수로 5년을 약속해.","big",2,2,0],
-        ["미안하네. 근데 자네도 알잖나, 이 건물 상태.","mid",1,-8,0],
+        ["미안하네. 근데 자네도 알잖나, 이 건물 상태.","mid",0,-8,0],
         ["…세 번을 물었는데 세 번을 안 했구먼. 나는 세는 줄도 몰랐고.","small",0,0,1]],
     re:['"그 말씀을 그때 해주셨으면 저 1년 일찍 나왔을 거예요."',
         '"건물이 문제가 아니었어요, 사장님. 대답이 문제였지."',
@@ -204,7 +250,7 @@ var S = [
         '"엄마한테 그렇게 말씀하시지 그러셨어요.\n엄마가 사장님 무서워했거든요."']},
    {say:'"이거요. (열쇠를 내민다)\n\n하나만 물어볼게요.\n재개발 안 되면, 저 다시 들어올 수 있어요?\n\n대답 안 하셔도 돼요. 익숙해요.\n근데 오늘은 한 번만 해주세요."',
     ch:[["들어와. 자리 비워둘 테니까.","big",-1,4,0],
-        ["그때 가서 보자고. 지금은 나도 몰라.","mid",2,-2,0],
+        ["그때 가서 보자고. 지금은 나도 몰라.","mid",0,-4,0],
         ["…약속은 못 하겠고, 자네 번호는 지우지 않으마.","small",0,0,1]],
     re:['"(열쇠를 도로 주머니에 넣는다) 그럼 이거, 조금만 더 갖고 있을게요."',
         '"(열쇠를 손에 쥔 채로) 네. 알겠습니다, 사장님."',
@@ -212,7 +258,7 @@ var S = [
    {say:'"가세요, 늘 다니시던 길로.\n\n…사장님, 그거 평지 아니에요.\n아셔도 되고 모르셔도 되는데, 저는 오르막이라고 말할게요.\n\n사장님한테 그 말 한 사람이 하나는 있어야 될 것 같아서요."', ch:[], re:[]}
   ]},
 
-{ spot:3, name:"재개발 추진위원", ini:"추",
+{ spot:3, name:"재개발 추진위원", ini:"추", sub:"김씨 다음 반장.<br>십 년째 대답을 기다리는 사람.",
   see:"내려가면서 건물을 보세요. 발밑에 있습니다.\n\n지붕이 보입니다. 창문이 보입니다.\n땅에 파묻힌 1층은 보이지 않습니다.",
   recall:["나는 여기 자주 온다.\n여기서 보면 우리 건물이 제일 낫다.\n지붕도 반듯하고 창문도 크고.",
 "저 아래 1층은 여기서 안 보인다.\n그래서 여기가 좋다."],
@@ -226,14 +272,14 @@ var S = [
         '"……. (같이 내려다본다)"']},
    {say:'"사장님네 1층에서 반상회 했잖아요. 제일 넓다고.\n저 거기 스무 번은 앉았어요.\n\n그 방 넓은 거 아는 사람, 이 골목에 저밖에 없어요.\n근데 사장님, 그 방에 사람 모인 게 언제죠?"',
     ch:[["자네가 반장 되고 안 모았잖아.","big",3,4,0],
-        ["요즘 누가 반상회를 해.","mid",1,0,0],
+        ["요즘 누가 반상회를 해.","mid",0,0,0],
         ["…내가 대답을 안 해서 못 모은 거지.","small",-2,0,1]],
     re:['"제가 세 번 부탁드렸어요. 사장님이 세 번 다 생각해보자고 하셨고요."',
         '"저희 어머니 계단에서 넘어지신 날 모으려고 했어요.\n사장님이 대답을 안 하셔서 못 했고요."',
         '"……그 말 듣는 데 십 년 걸렸네요."']},
    {say:'"저 사장님 미워서 이러는 거 아니에요.\n\n할머니는 사장님 보고 안 쓰신대요. 위 빌라도 눈치만 보고요.\n사장님이 싫다고 한 마디만 하셨으면 저희가 딴 방법 찾았어요.\n\n근데 사장님은 싫다고도 좋다고도 안 하셨어요. 십 년을요."',
     ch:[["그럼 나 빼고 하지. 왜 나를 기다려.","big",2,2,0],
-        ["십 년 동안 뭐가 나빠졌나. 다들 잘 살았잖아.","mid",1,4,0],
+        ["십 년 동안 뭐가 나빠졌나. 다들 잘 살았잖아.","mid",0,2,0],
         ["…내가 십 년을 세워놨구먼. 미안하네.","small",-1,0,1]],
     re:['"사장님 건물이 제일 커요. 빼면 그게 재개발이에요?"',
         '"저희 어머니가 그 사이 두 번 넘어지셨어요.\n사장님이 반장 때 쓸던 그 계단에서요."',
@@ -248,7 +294,7 @@ var S = [
    {say:'"다음 총회 전까지예요. 그때는 진짜 마지막이고요.\n\n…저 사장님한테 반장 배웠어요. 계단 쓰는 것도요.\n그러니까 오늘 저 미워하지 마세요.\n\n아, 이따 저 가파른 길로 내려가 보세요.\n사장님 그 길로 안 다니시잖아요."', ch:[], re:[]}
   ]},
 
-{ spot:4, name:"목수 영감의 아들", ini:"목",
+{ spot:4, name:"목수 영감의 아들", ini:"목", sub:"골목에서 제일 야무졌던 집의,<br>남은 사람.",
   see:"숨을 고르고 돌아서세요.\n\n여기서는 다 보입니다.\n위도, 아래도.",
   recall:["나는 이 길로 안 다닌다. 가파르기도 하고.",
 "여기서 보면 다 보인다.\n위는 멀쩡하고, 아래는 저렇다.",
@@ -285,14 +331,14 @@ var S = [
    {say:'"가보세요, 아저씨.\n\n…저 이제 이 골목 안 올 것 같아요.\n볼 게 없어서요."', ch:[], re:[]}
   ]},
 
-{ spot:5, name:"아들", ini:"아",
+{ spot:5, name:"아들", ini:"아", sub:"동의서를 삼 주째<br>들고 다니는 사람.",
   see:"건물 밑입니다.\n잠깐 조용히 서 보세요.\n\n위에서 소리가 내려옵니다.\n누군가 살고 있는 소리.",
   recall:["여기 서면 위층 소리가 다 내려온다.\n옛날엔 재봉틀 소리가 내려왔다.\n1층은 조용하다.",
 "저 축대 아래 연필 금이 있다. 애 키를 쟀다.\n페인트를 갈 때마다 거기만 피해서 칠했다.\n초록일 때도, 빨강일 때도."],
   beats:[
    {say:'"아버지. 여기 계실 줄 알았어요.\n오늘 골목 한 바퀴 도셨다면서요.\n\n…가방에 동의서 있어요. 삼 주 됐어요.\n아버지 이름 칸만 비어 있고요."',
     ch:[["도로 넣어라. 이 집은 안 팔아.","big",2,0,0],
-        ["누가 시켰냐. 네 처냐.","mid",1,0,0],
+        ["누가 시켰냐. 네 처냐.","mid",0,0,0],
         ["…삼 주를 들고 다녔구나.","small",0,0,1]],
     re:['"저 오늘 그 말 들으러 온 거 아니에요."',
         '"아무도 안 시켰어요. 제가 삼 주째 못 꺼내고 있는 거예요."',
@@ -314,7 +360,7 @@ var S = [
    {say:'"아버지. 애들이 이 집 뭐라고 부르는지 아세요?\n마감 후진 집이요. 저 어릴 때부터요.\n\n…하나만 물을게요.\n아버지가 삼십 년 지킨 게 이 집이에요, 아니면 제일 넓다는 그 말이에요?\n\n천천히 대답하세요. 저 이번엔 안 가고 기다릴게요.\n\n(축대에 손을 대보세요.)"',
     ch:[["집이고 말이고가 어딨어. 이 집이 그 말이야. 나는 안 놔.","big",3,2,0],
         ["…네 말이 맞다. 그만하자. 종이 이리 다오.","mid",0,0,0,"sign"],
-        ["…여기 네 키 재던 금이 있다. 나는 삼십 년, 이것만 피해서 칠했다.","small",0,0,2]],
+        ["…여기 네 키 재던 금이 있다. 나는 삼십 년, 이것만 피해서 칠했다.","small",0,0,1]],
     re:['"…네. 알겠어요, 아버지. (동의서를 가방에 넣는다) 저녁에 전화할게요."',
         '"(바로 꺼내지 않는다) …정말이에요, 아버지?"',
         '"……. (쪼그려 앉는다. 한참을.)\n이거였구나. 초록만 안 칠해진 데가."']},
@@ -353,13 +399,15 @@ function newGame(){
       arr.push(o);
     } shuf.push(arr); }
   return {R:62,V:100,sok:0,sign:false,elder:false,log:[],phase:'title',si:0,bi:0,ri:0,wi:0,
-          pR:0,pV:0,pS:0,dR:0,dV:0,dS:0,shuf:shuf,ic:0};
+          pR:0,pV:0,pS:0,dR:0,dV:0,dS:0,shuf:shuf,ic:0,remote:null};
 }
 function save(){ try{localStorage.setItem('im_save', JSON.stringify(G));}catch(e){} }
 function load(){ try{var s=localStorage.getItem('im_save'); if(s) return JSON.parse(s);}catch(e){} return null; }
 
 function band(){
-  if(!G) return;
+  var bi0=document.getElementById('bandIn'), bw=document.getElementById('band');
+  if(!G || G.phase==='title' || G.phase==='intro'){ bw.classList.add('hidden'); return; }
+  bw.classList.remove('hidden');
   document.getElementById('bR').textContent = G.R+'%';
   document.getElementById('bV').textContent = (G.V/10).toFixed(1)+'억';
   var deg = -1.5 - Math.max(0,(G.R-62))*0.22;
@@ -367,7 +415,7 @@ function band(){
   var bi = document.getElementById('bandIn');
   bi.style.transform = 'rotate('+deg.toFixed(2)+'deg) scale(1.06)';
   bi.style.filter = 'saturate('+(1-pale).toFixed(2)+')';
-  var big = 13 + Math.max(0, G.R-62)*0.25;
+  var big = 15 + Math.max(0, G.R-62)*0.25;
   document.getElementById('bR').style.fontSize = big+'px';
 }
 
@@ -389,49 +437,98 @@ function dist(a,b){
 function wake(){ if('wakeLock' in navigator){ navigator.wakeLock.request('screen').catch(function(){}); } }
 
 /* ===== 화면 ===== */
-function html(s){ scr.innerHTML = s; scr.className='wrap fade'; window.scrollTo(0,0); }
+function html(s, night){
+  document.body.classList.toggle('night', !!night);
+  var bg = night ? '#26241F' : '#F4F1E8';
+  document.documentElement.style.backgroundColor = bg;
+  document.body.style.backgroundColor = bg;
+  var appEl = document.getElementById('app');
+  if(appEl) appEl.style.backgroundColor = bg;
+  var bandEl = document.getElementById('band');
+  if(bandEl) bandEl.style.backgroundColor = bg;
+  scr.innerHTML = s;
+  scr.className='wrap';
+  void scr.offsetWidth;
+  scr.className='wrap fade';
+  window.scrollTo(0,0);
+}
+
+var LOCK=0;
+function locked(){ var t=Date.now(); if(t-LOCK<450) return true; LOCK=t; return false; }
+function tapNext(fn){
+  var born=Date.now();
+  scr.onclick=function(){
+    if(Date.now()-born<450) return;
+    if(locked()) return;
+    scr.onclick=null; fn();
+  };
+}
 
 function scrTitle(){
-  html('<h1>이태원 맨션</h1>'+
-   '<p class="mid" style="margin-top:18px">서울 용산구 회나무로13나길 31<br>어느 부동산 중개인의 말에서</p>'+
-   '<p class="small" style="margin:30px 0 6px">실제로 사람이 사는 건물입니다.<br>거주자에게 말을 걸지 말고, 조용히 봐주세요.<br>이어폰을 권합니다. 차와 계단을 조심하세요.</p>'+
-   '<button class="btn" id="go">걷기 시작</button>'+
-   (load()? '<button class="btn ghost sm" id="cont">이어서 하기</button>':'')+
-   '<p class="small" style="margin-top:24px">'+VERSION+(GHOST?' · 유령 모드':'')+(SURVEY?' · 좌표 수집 모드':'')+'</p>');
+  document.getElementById('band').classList.add('hidden');
+  var h='<div class="titleWrap">';
+  h+='<p class="tAddr">회나무로13나길 31</p>';
+  h+='<h1 class="tMain">이태원 맨션</h1>';
+  h+='<div class="tRule"></div>';
+  h+='<p class="tSub">서울 용산구, 어느 부동산 중개인의 말에서<br>걸으면서 하는 이야기 · 약 15분</p>';
+  h+='<div class="tBtns">';
+  h+='<button class="btn" id="go">걷기 시작</button>';
+  h+=(load()? '<button class="btn ghost sm" id="cont">이어서 하기</button>':'');
+  h+='</div>';
+  h+='<p class="tNote">실제로 사람이 사는 건물입니다.<br>거주자에게 말을 걸지 말고, 조용히 봐주세요.<br>이어폰을 권합니다. 차와 계단을 조심하세요.</p>';
+  h+='<p class="tVer">'+VERSION+(GHOST?' · 유령 모드':'')+(SURVEY?' · 좌표 수집':'')+'</p>';
+  h+='</div>';
+  html(h, true);
   document.getElementById('go').onclick=function(){ localStorage.removeItem('im_save'); G=newGame(); startGPS(); wake(); G.phase='intro'; G.ic=0; save(); route(); };
   var c=document.getElementById('cont'); if(c) c.onclick=function(){ G=load(); startGPS(); wake(); route(); };
 }
 
 function scrIntro(){
-  if(G.ic>=INTRO.length){ G.phase='see'; G.si=0; G.bi=0; G.ri=0; save(); return route(); }
-  html('<p class="recall serif">'+INTRO[G.ic]+'</p><p class="tapHint">화면을 누르면 계속됩니다</p>');
-  scr.onclick=function(){ scr.onclick=null; G.ic++; save(); route(); };
+  if(G.ic>=INTRO.length){ G.phase='chapter'; G.si=0; G.bi=0; G.ri=0; save(); return route(); }
+  html('<p class="recall serif">'+INTRO[G.ic]+'</p><p class="tapHint">화면을 누르면 계속됩니다</p>', true);
+  tapNext(function(){ G.ic++; save(); route(); });
 }
 
 function route(){
   band();
   if(!G) return scrTitle();
   if(G.phase==='intro') return scrIntro();
+  if(G.phase==='chapter') return scrChapter();
   if(G.phase==='see') return scrSee();
   if(G.phase==='recall') return scrRecall();
   if(G.phase==='beat') return scrBeat();
   if(G.phase==='react') return scrReact();
+  if(G.phase==='settle') return scrSettle();
   if(G.phase==='walk') return scrWalk();
   if(G.phase==='arrive') return scrArrive();
   if(G.phase==='ending') return scrEnding();
   scrTitle();
 }
 
+var ORD=['첫','두','세','네','다섯','여섯'];
+function scrChapter(){
+  var s=S[G.si];
+  var h='<div class="chapCard">';
+  h+='<p class="chapNum">'+ORD[G.si]+' 번째 만남</p>';
+  h+='<div class="chapPort"><img src="img/ch_'+G.si+'.jpg" onerror="this.style.display=\'none\';this.parentNode.textContent=\''+s.ini+'\'">'+'</div>';
+  h+='<p class="chapName">'+s.name+'</p>';
+  h+='<p class="chapSub">'+(s.sub||'')+'</p>';
+  h+='</div>';
+  h+='<p class="tapHint" style="margin-top:56px">화면을 누르면 계속됩니다</p>';
+  html(h, true);
+  tapNext(function(){ G.phase='see'; save(); route(); });
+}
+
 function scrSee(){
   var s=S[G.si];
   html('<p class="see serif">'+s.see+'</p><p class="tapHint">화면을 누르면 계속됩니다</p>');
-  scr.onclick=function(){ scr.onclick=null; G.phase='recall'; G.ri=0; save(); route(); };
+  tapNext(function(){ G.phase='recall'; G.ri=0; save(); route(); });
 }
 function scrRecall(){
   var s=S[G.si];
   if(G.ri>=s.recall.length){ G.phase='beat'; G.bi=0; return route(); }
-  html('<p class="recall serif">'+s.recall[G.ri]+'</p><p class="tapHint">화면을 누르면 계속됩니다</p>');
-  scr.onclick=function(){ scr.onclick=null; G.ri++; save(); route(); };
+  html('<p class="recall serif">'+s.recall[G.ri]+'</p><p class="tapHint">화면을 누르면 계속됩니다</p>', true);
+  tapNext(function(){ G.ri++; save(); route(); });
 }
 function scrBeat(){
   var s=S[G.si], b=s.beats[G.bi];
@@ -441,9 +538,9 @@ function scrBeat(){
   var h='<div class="npc"><div class="chip">'+s.ini+'</div><div class="npcname">'+s.name+'</div></div>';
   h+='<p class="say">'+say+'</p>';
   if(b.ch.length===0){
-    h+='<button class="btn" id="n">다음으로</button>';
+    h+='<p class="tapHint">화면을 누르면 계속됩니다</p>';
     html(h);
-    document.getElementById('n').onclick=function(){ G.bi++; save(); route(); };
+    tapNext(function(){ G.bi++; save(); route(); });
     return;
   }
   var order=G.shuf[G.si][G.bi];
@@ -453,7 +550,11 @@ function scrBeat(){
   }
   html(h);
   var bs=scr.querySelectorAll('.ch');
-  for(var j=0;j<bs.length;j++) bs[j].onclick=function(){ pick(parseInt(this.getAttribute('data-i'))); };
+  for(var j=0;j<bs.length;j++) bs[j].onclick=function(ev){
+    if(ev){ ev.stopPropagation(); }
+    if(locked()) return;
+    pick(parseInt(this.getAttribute('data-i')));
+  };
   if(b.gauge){ /* 게이지 등장 비트: band는 이미 표시 중 */ }
 }
 function pick(i){
@@ -468,50 +569,71 @@ function scrReact(){
   var s=S[G.si], b=s.beats[G.bi];
   var h='<div class="npc"><div class="chip">'+s.ini+'</div><div class="npcname">'+s.name+'</div></div>';
   h+='<p class="say">'+b.re[G.lastPick]+'</p>';
-  h+='<button class="btn" id="n">다음으로</button>';
+  h+='<p class="tapHint">화면을 누르면 계속됩니다</p>';
   html(h);
-  document.getElementById('n').onclick=function(){ G.bi++; G.phase='beat'; save(); route(); };
+  tapNext(function(){ G.bi++; G.phase='beat'; save(); route(); });
 }
 
 function endSession(){
-  G.R=Math.max(0,Math.min(100,G.R+G.pR+1));      /* 자동 R+1 */
-  G.V=Math.max(0,Math.min(140,G.V+G.pV-2));      /* 자동 V-0.2억 */
-  G.dR=G.pR+1; G.dV=G.pV-2; G.dS=G.pS; G.pR=0; G.pV=0; G.pS=0;
+  var calm = G.pS>=2;
+  var aR = calm?0:1, aV = calm?0:-2;
+  G.R=Math.max(0,Math.min(100,G.R+G.pR+aR));
+  G.V=Math.max(0,Math.min(140,G.V+G.pV+aV));
+  G.dR=G.pR+aR; G.dV=G.pV+aV; G.dS=G.pS; G.calm=calm; G.pR=0; G.pV=0; G.pS=0;
   G.elderNow=false;
-  band();
-  if(G.V<=60 || G.sign || G.R>=75 || G.si>=5){ G.phase='ending'; save(); return route(); }
-  G.wi=G.si; G.si++; G.phase='walk'; walkStart=Date.now(); midShown=false;
-  save(); route();
+  G.elderJust=(G.elder && !G.elderShown); if(G.elderJust) G.elderShown=true;
+  var done = (G.V<=60 || G.sign || G.R>=75 || G.si>=5);
+  if(!done){ G.wi=G.si; G.si++; }
+  G.next = done ? 'ending' : 'walk';
+  G.phase='settle'; save(); route();
 }
 
-function echoText(){
-  var lines=[];
-  if(G.elder && G.wi===1 && false){} /* elder echo below */
-  var main;
-  if(G.dS>=2 && G.dR<=1 && Math.abs(G.dV)<=3) main='별 소문이 없었다. 사실은 심심해서.';
-  else if(G.dR>1) main='돈이 된다는 소문이 돌았다.';
-  else if(G.dV<-2) main='돈이 안 된다는 소문이 돌았다.';
-  else main='그 말이 골목을 돌았다.';
-  lines.push(main);
-  if(S[G.wi] && G.elderEcho){ }
-  var num='재개발 열기 '+(G.dR>=0?'+':'')+G.dR+' · 감정가 '+(G.dV>=0?'+':'')+(G.dV/10).toFixed(1)+'억';
-  return '<b>'+main+'</b><br>'+num+'<br><span style="opacity:.8">조합이 오늘도 골목을 돌았다.</span>'+(G.elderJust?'<br><b>노인이 종이에 이름을 썼다.</b>':'');
+function scrSettle(){
+  band();
+  var main, sub;
+  if(G.calm){ main='별 소문이 없었다.\n사실은 심심해서.'; sub='조합도 오늘은 그냥 지나갔다.'; }
+  else if(G.dR>1){ main='돈이 된다는 소문이 돌았다.'; sub='조합이 오늘도 골목을 돌았다.'; }
+  else if(G.dV<-2){ main='돈이 안 된다는 소문이 돌았다.'; sub='은행 쪽에서 전화가 한 번 왔다 끊겼다.'; }
+  else { main='그 말이 골목을 돌았다.'; sub='조합이 오늘도 골목을 돌았다.'; }
+  var h='<p class="settleMain serif">'+main+'</p>';
+  h+='<p class="settleNum">재개발 열기 '+(G.dR>=0?'+':'')+G.dR+' · 감정가 '+(G.dV>=0?'+':'')+(G.dV/10).toFixed(1)+'억<br><span style="opacity:.7">'+sub+'</span>'+(G.elderJust?'<br><br><b style="color:#F4F1E8">노인이 종이에 이름을 썼다.<br>험담은 건물만 깎는 게 아니었다.</b>':'')+'</p>';
+  h+='<p class="tapHint" style="margin-top:60px">화면을 누르면 계속됩니다</p>';
+  html(h, true);
+  tapNext(function(){
+    G.phase=G.next;
+    if(G.next==='walk'){ walkStart=Date.now(); midShown=false; }
+    else { G.ei=0; }
+    save(); route();
+  });
 }
 
 function scrWalk(){
   var w=WALK[G.wi], sp=SPOTS[w.to];
-  G.elderJust = (G.elder && G.wi===1 && !G.elderShown);
-  if(G.elderJust) G.elderShown=true;
+  if(G.remote){ return scrWalkRemote(w,sp); }
   var h='';
   h+='<div class="lm">다음 지점 · '+sp.name+'</div>';
   h+='<p class="guide serif">'+w.txt+'</p>';
   h+='<div id="mapbox"></div>';
   h+='<div id="dist">남은 거리 <b>--</b></div><div id="acc"></div>';
-  h+='<div class="toast" id="toast">'+echoText()+'</div>';
   h+='<div id="arrivebox"></div>';
   html(h);
   drawMap();
   tickWalk();
+}
+
+function scrWalkRemote(w,sp){
+  var h='';
+  h+='<div class="lm">다음 지점 · '+sp.name+'</div>';
+  h+='<p class="guide serif">'+w.txt+'</p>';
+  h+='<p class="small" style="text-align:center;margin-top:22px">현장 밖에서 플레이 중입니다. 걷기를 건너뛸 수 있어요.</p>';
+  h+='<button class="btn" id="bk">다음 장소로</button>';
+  html(h);
+  document.getElementById('bk').onclick=function(ev){
+    if(ev){ ev.stopPropagation(); }
+    if(locked()) return;
+    if(w.mid && !midShown){ midShown=true; showMid(w.mid); return; }
+    arriveNow();
+  };
 }
 
 function drawMap(){
@@ -541,6 +663,16 @@ function drawMap(){
 function tickWalk(){
   if(!G || G.phase!=='walk') return;
   var w=WALK[G.wi], sp=SPOTS[w.to];
+  if(G.remote==null){
+    if(GHOST){ G.remote=true; save(); return scrWalk(); }
+    if(pos){
+      G.remote = dist(pos,sp) > 500;
+      save();
+      if(G.remote) return scrWalk();
+    } else if(Date.now()-walkStart > 8000){
+      G.remote=true; save(); return scrWalk();
+    }
+  }
   var d = pos ? dist(pos,sp) : null;
   var de=document.getElementById('dist'), ae=document.getElementById('acc');
   if(!de) return;
@@ -564,8 +696,8 @@ function tickWalk(){
   setTimeout(tickWalk, 1200);
 }
 function showMid(txt){
-  html('<p class="recall serif">'+txt+'</p><p class="tapHint">화면을 누르면 계속 걷습니다</p>');
-  scr.onclick=function(){ scr.onclick=null; scrWalk(); };
+  html('<p class="recall serif">'+txt+'</p><p class="tapHint">화면을 누르면 계속됩니다</p>', true);
+  tapNext(function(){ if(G.remote){ arriveNow(); } else { scrWalk(); } });
 }
 function arriveNow(){
   if(!G || G.phase!=='walk') return;
@@ -574,31 +706,55 @@ function arriveNow(){
 function scrArrive(){
   var sp=SPOTS[WALK[G.wi].to];
   html('<p class="see serif">'+sp.name+'에 도착했습니다.</p><button class="btn" id="n">멈춰 서기</button>');
-  document.getElementById('n').onclick=function(){ G.phase='see'; G.bi=0; G.ri=0; save(); route(); };
+  document.getElementById('n').onclick=function(){ G.phase='chapter'; G.bi=0; G.ri=0; save(); route(); };
 }
 
+function endKey(){
+  if(G.V<=60) return G.sok>=12?'B2':'B1';
+  if(G.sign || G.R>=75) return G.sok>=12?'A2':'A1';
+  return G.sok>=12?'C2':'C1';
+}
 function scrEnding(){
-  var key;
-  if(G.V<=60) key = G.sok>=12?'B2':'B1';
-  else if(G.sign || G.R>=75) key = G.sok>=12?'A2':'A1';
-  else key = G.sok>=12?'C2':'C1';
-  var e=ENDINGS[key];
-  var h='<p class="mid" style="margin-top:30px">전화가 온다. 파프리 공인중개사.</p>';
-  h+='<p class="say">"사장님, 저예요. 다 들어왔어요, 오늘 뭐라고 하고 다니셨는지.\n골목이 좁아서 그래요."</p>';
-  h+='<p class="small">오늘 당신이 한 말</p>';
-  for(var i=0;i<G.log.length;i++) h+='<p class="mid" style="margin:5px 0">'+G.log[i]+'</p>';
-  h+='<p class="say" style="margin-top:18px">"세어보니까 사장님, 오늘 '+G.log.length+'번 말씀하셨네요.\n그중에 '+G.sok+'번은 처음 하시는 말이었어요.\n\n삼십 년 만에요."</p>';
-  h+='<h1 style="margin-top:40px">'+e.t+'</h1>';
-  h+='<p class="recall serif">'+e.b+'</p>';
-  h+='<p class="mid">'+e.g+'<br>'+e.l+'</p>';
-  h+='<p class="mid" style="margin-top:20px">재개발 열기 '+G.R+'% · 감정가 '+(G.V/10).toFixed(1)+'억</p>';
-  h+='<p class="say" style="margin-top:40px">"사장님, 고개 한번 들어보세요.\n지금 그 건물 밑에 계시죠."</p>';
-  h+='<p class="see serif" style="margin:50px 0 40px">이 이야기는 지어낸 것입니다.\n그런데 저 초록 띠는,\n정말 길을 따라 기울어 있습니다.</p>';
-  h+='<button class="btn ghost" id="again">다시 걷는다</button>';
-  h+='<p class="small" style="margin-top:26px;text-align:center">이 게임은 파프리 워크숍에서 만들어졌습니다.<br>파프리 공인중개사는 실재하지 않습니다.</p>';
-  html(h);
-  localStorage.removeItem('im_save');
-  document.getElementById('again').onclick=function(){ G=newGame(); band(); scrTitle(); };
+  var e=ENDINGS[endKey()];
+  var step=G.ei||0;
+  if(step===0){
+    var h='<p class="mid" style="margin-top:80px;text-align:center">전화가 온다</p>';
+    h+='<p class="see serif" style="margin:20px 0 40px">파프리 공인중개사</p>';
+    h+='<p class="say" style="text-align:center">"사장님, 저예요.\n다 들어왔어요, 오늘 뭐라고 하고 다니셨는지.\n골목이 좁아서 그래요."</p>';
+    h+='<p class="tapHint">화면을 누르면 계속됩니다</p>';
+    html(h);
+  }
+  else if(step===1){
+    var h='<p class="small" style="margin-top:24px">오늘 당신이 한 말</p>';
+    for(var i=0;i<G.log.length;i++) h+='<p class="mid" style="margin:5px 0">'+G.log[i]+'</p>';
+    h+='<p class="say" style="margin-top:22px">"세어보니까 사장님, 오늘 '+G.log.length+'번 말씀하셨네요.\n그중에 '+G.sok+'번은 처음 하시는 말이었어요.\n\n삼십 년 만에요."</p>';
+    h+='<p class="tapHint">화면을 누르면 계속됩니다</p>';
+    html(h);
+  }
+  else if(step===2){
+    var h='<h1 style="margin-top:40px">'+e.t+'</h1>';
+    h+='<p class="recall serif" style="margin-top:20px">'+e.b+'</p>';
+    h+='<p class="mid" style="margin-top:14px">'+e.g+'<br>'+e.l+'</p>';
+    h+='<p class="small" style="margin-top:16px">재개발 열기 '+G.R+'% · 감정가 '+(G.V/10).toFixed(1)+'억</p>';
+    h+='<p class="tapHint">화면을 누르면 계속됩니다</p>';
+    html(h);
+  }
+  else if(step===3){
+    var h='<p class="see serif" style="margin-top:120px">"사장님, 고개 한번 들어보세요.\n\n지금 그 건물 밑에 계시죠."</p>';
+    h+='<p class="tapHint">화면을 누르면 계속됩니다</p>';
+    html(h, true);
+  }
+  else {
+    try{ var a=new Audio('audio/ending.mp3'); a.volume=0.8; a.play().catch(function(){}); }catch(err){}
+    var h='<p class="see serif" style="margin:110px 0 70px">이 이야기는 지어낸 것입니다.\n\n그런데 저 초록 띠는,\n정말 길을 따라 기울어 있습니다.</p>';
+    h+='<button class="btn ghost" id="again">다시 걷는다</button>';
+    h+='<p class="small" style="margin-top:30px;text-align:center">이 게임은 파프리 워크숍에서 만들어졌습니다.<br>파프리 공인중개사는 실재하지 않습니다.</p>';
+    html(h, true);
+    localStorage.removeItem('im_save');
+    document.getElementById('again').onclick=function(){ G=newGame(); band(); scrTitle(); };
+    return;
+  }
+  tapNext(function(){ G.ei=step+1; save(); route(); });
 }
 
 /* ===== 좌표 수집 ===== */
