@@ -211,7 +211,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.2.0";
+var VERSION = "v1.4.0";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -736,9 +736,13 @@ function scrTitle(){
   h+='<p class="tVer">'+VERSION+(GHOST?' · 유령 모드':'')+(SURVEY?' · 좌표 수집':'')+(DEBUG?' · 진단':'')+' · 좌표 '+SPOTSRC+'</p>';
   h+='</div>';
   html(h, true);
+  /* 타이틀에서 바로 깔린다. 자동재생이 막히면 첫 탭에서 풀린다 */
+  function openMusic(){ if(!BUS.music) busPlay('music','opening',VOL.opening,true,2600); }
+  openMusic();
+  document.addEventListener('touchstart', openMusic);
+  document.addEventListener('click', openMusic);
   document.getElementById('go').onclick=function(){
-    localStorage.removeItem('im_save'); G=newGame(); wake();
-    busPlay('music','opening',VOL.opening,true,1800);
+    localStorage.removeItem('im_save'); G=newGame(); wake(); openMusic();
     G.phase='perm'; save(); route();
   };
   var c=document.getElementById('cont'); if(c) c.onclick=function(){ G=load(); startGPS(); wake(); route(); };
@@ -960,16 +964,43 @@ function scrChapter(){
   tapNext(function(){ G.phase='see'; save(); route(); });
 }
 
+/* 음성이 끝나야 힌트가 뜬다. 듣는 중에 누르면 한 번 더 누르라고 알린다 */
+function voiceGate(name, hintId, next){
+  var armed=false, tapped=0;
+  function reveal(){ armed=true; var e=document.getElementById(hintId); if(e) e.style.opacity='1'; }
+  duck(true);
+  playVoice(name, function(){ duck(false); reveal(); });
+  setTimeout(function(){ if(VOICEfail) reveal(); }, 2200);
+  var born=Date.now();
+  scr.onclick=function(){
+    if(Date.now()-born<450) return;
+    if(locked()) return;
+    if(!armed){
+      tapped++;
+      if(tapped===1){
+        var e=document.getElementById(hintId);
+        if(e){ e.textContent='한 번 더 누르면 넘어갑니다'; e.style.opacity='.55'; }
+        return;
+      }
+    }
+    scr.onclick=null; stopVoice(); duck(false); next();
+  };
+}
+
 function scrSee(){
   var s=S[G.si];
-  html('<p class="see serif">'+s.see+'</p><p class="tapHint">화면을 누르면 계속됩니다</p>');
-  tapNext(function(){ G.phase='recall'; G.ri=0; save(); route(); });
+  html('<p class="see serif">'+s.see+'</p>'+
+       '<p class="tapHint" id="shint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>');
+  voiceGate('V-5'+G.si, 'shint', function(){ G.phase='recall'; G.ri=0; save(); route(); });
 }
+/* 회상 음성 번호. 세션별 시작값 + 회상 순서 (V-10 ~ V-25) */
+var RECALL_BASE=[10, 12, 15, 18, 21, 24];
 function scrRecall(){
   var s=S[G.si];
-  if(G.ri>=s.recall.length){ G.phase='beat'; G.bi=0; return route(); }
-  html('<p class="recall serif">'+s.recall[G.ri]+'</p><p class="tapHint">화면을 누르면 계속됩니다</p>', true);
-  tapNext(function(){ G.ri++; save(); route(); });
+  if(G.ri>=s.recall.length){ stopVoice(); G.phase='beat'; G.bi=0; return route(); }
+  html('<p class="recall serif">'+s.recall[G.ri]+'</p>'+
+       '<p class="tapHint" id="rhint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>', true);
+  voiceGate(vid(RECALL_BASE[G.si]+G.ri), 'rhint', function(){ G.ri++; save(); route(); });
 }
 function scrBeat(){
   var s=S[G.si], b=s.beats[G.bi];
@@ -1070,6 +1101,7 @@ function lmBox(i, name, cap){
 function scrWalk(){
   var w=WALK[G.wi], sp=SPOTS[w.to];
   busPlay('layer','amb',VOL.amb,true,2000);
+  G._midSaid = G._midSaid || {};
   if(G.remote){ return scrWalkRemote(w,sp); }
   var h='';
   h+=lmBox(w.to, sp.name);
@@ -1180,8 +1212,9 @@ function tickWalk(){
   setTimeout(tickWalk, 1200);
 }
 function showMid(txt){
-  html('<p class="recall serif">'+txt+'</p><p class="tapHint">화면을 누르면 계속됩니다</p>', true);
-  tapNext(function(){ if(G.remote){ arriveNow(); } else { scrWalk(); } });
+  html('<p class="recall serif">'+txt+'</p>'+
+       '<p class="tapHint" id="mhint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>', true);
+  voiceGate('V-30', 'mhint', function(){ if(G.remote){ arriveNow(); } else { scrWalk(); } });
 }
 function arriveNow(){
   FIX=[]; if(G) G.nearHit=0;
@@ -1201,6 +1234,7 @@ function endKey(){
   if(G.sign || G.R>=75) return G.sok>=12?'A2':'A1';
   return G.sok>=12?'C2':'C1';
 }
+var END_VID={A1:'V-40',A2:'V-41',B1:'V-42',B2:'V-43',C1:'V-44',C2:'V-45'};
 function scrEnding(){
   var k=endKey(), e=ENDINGS[k];
   var step=G.ei||0;
@@ -1228,8 +1262,11 @@ function scrEnding(){
     h+='<p class="recall serif" style="margin-top:20px">'+e.b+'</p>';
     h+='<p class="mid" style="margin-top:14px">'+e.g+'<br>'+e.l+'</p>';
     h+='<p class="small" style="margin-top:16px">재개발 열기 '+G.R+'% · 감정가 '+(G.V/10).toFixed(1)+'억</p>';
-    h+='<p class="tapHint">화면을 누르면 계속됩니다</p>';
+    h+='<p class="tapHint" id="ehint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>';
     html(h);
+    /* 중개사가 결말을 들려준다. 김씨가 아닌 유일한 목소리 */
+    voiceGate(END_VID[k], 'ehint', function(){ G.ei=step+1; save(); route(); });
+    return;
   }
   else if(step===3){
     var h='<p class="see serif" style="margin-top:120px">"사장님, 고개 한번 들어보세요.\n\n지금 그 건물 밑에 계시죠."</p>';
@@ -1237,13 +1274,12 @@ function scrEnding(){
     html(h, true);
   }
   else {
-    try{ var a=new Audio('audio/ending.mp3'); a.volume=0.8; a.play().catch(function(){}); }catch(err){}
     var h='<p class="see serif" style="margin:110px 0 70px">이 이야기는 지어낸 것입니다.\n\n그런데 저 초록 띠는,\n정말 길을 따라 기울어 있습니다.</p>';
     h+='<button class="btn ghost" id="again">다시 걷는다</button>';
     h+='<p class="small" style="margin-top:30px;text-align:center">이 게임은 파프리 워크숍에서 만들어졌습니다.<br>파프리 공인중개사는 실재하지 않습니다.</p>';
     html(h, true);
     localStorage.removeItem('im_save');
-    document.getElementById('again').onclick=function(){ G=newGame(); band(); scrTitle(); };
+    document.getElementById('again').onclick=function(){ stopAllAudio(); G=newGame(); band(); scrTitle(); };
     return;
   }
   tapNext(function(){ G.ei=step+1; save(); route(); });
