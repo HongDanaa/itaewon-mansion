@@ -3,113 +3,196 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F4F1E8">
+<meta name="theme-color" content="#F0EADB">
 <title>이태원 맨션</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#F4F1E8; --ink:#26241F; --ink2:#5F5B4E; --ink3:#A29C88;
-  --green:#6E8B74; --green-d:#41543F; --card:#EAE6D9; --line:#D6D1BF;
+  --paper:#F0EADB; --ink:#2B2721; --ink2:#8A8071; --ink3:#A79F8E;
+  --green:#5F7F66; --green-d:#41543F; --card:#E6DFCC; --line:#CDC4B0;
+  --seal:#9C3A2C; --night:#211E19;
+  --f-body:"Gowun Dodum","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  --f-serif:"Gowun Batang","Apple SD Gothic Neo",serif;
+  --f-mono:"Nanum Gothic Coding",ui-monospace,Menlo,monospace;
+  --f-hand:"Nanum Pen Script","Gowun Dodum",cursive;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-  overscroll-behavior:none;}
+  font-family:var(--f-body); overscroll-behavior:none;}
 body{min-height:100vh;min-height:100dvh;}
-#app{max-width:520px;margin:0 auto;padding:0 0 28px;}
-.serif{font-family:"Apple SD Gothic Neo",Georgia,"Noto Serif KR",serif}
-#band{position:sticky;top:0;z-index:20;background:var(--paper);padding:10px 0 6px;}
-#bandIn{background:var(--green);color:var(--paper);display:flex;justify-content:space-between;
-  align-items:center;padding:12px 16px;font-size:13.5px;transform-origin:center;
-  transform:rotate(0deg) scale(1.02);transition:transform .9s ease, filter .8s ease;}
-#bandIn b{font-weight:700;font-size:15px;transition:font-size .5s}
-.wrap{padding:0 20px}
-h1{font-size:30px;font-weight:600;letter-spacing:-.5px;margin:38px 0 6px}
+
+/* ===== 패턴지: 방안 격자 ===== */
+#app{max-width:520px;margin:0 auto;padding:0 0 28px;min-height:100dvh;
+  transition:background-color .5s ease;
+  background-image:
+    linear-gradient(to right, rgba(43,39,33,.042) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(43,39,33,.042) 1px, transparent 1px);
+  background-size:26px 26px;}
+body.night #app{background-image:none}
+
+.serif{font-family:var(--f-serif)}
+.wrap{padding:0 20px;min-height:78dvh}
+h1{font-size:30px;font-weight:700;letter-spacing:-.5px;margin:38px 0 6px;font-family:var(--f-serif)}
 p{line-height:1.75;margin:0 0 14px}
 .small{font-size:12.5px;color:var(--ink3);line-height:1.6}
 .mid{font-size:13.5px;color:var(--ink2);line-height:1.7}
 button{font-family:inherit;cursor:pointer}
-.btn{display:block;width:100%;background:var(--green);color:var(--paper);border:0;
-  border-radius:10px;padding:15px;font-size:16px;font-weight:500;margin:10px 0}
-.btn.ghost{background:transparent;color:var(--green-d);border:1px solid var(--line)}
-.btn.sm{padding:11px;font-size:14px}
+
+/* ===== 줄자 게이지 ===== */
+#band{position:sticky;top:0;z-index:20;background:var(--paper);padding:10px 0 6px;
+  transition:opacity .7s ease, max-height .7s ease, padding .7s ease, background-color .5s ease;}
+#band.hidden{opacity:0;max-height:0;padding:0;overflow:hidden;pointer-events:none}
+#bandIn{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:13px 16px 15px;font-family:var(--f-mono);font-size:12px;
+  color:var(--ink);background-color:var(--card);
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  background-image:
+    repeating-linear-gradient(90deg, var(--green) 0 14px, transparent 14px 25px),
+    repeating-linear-gradient(90deg, var(--ink2) 0 1px, transparent 1px 9px),
+    repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px 45px);
+  background-size:100% 3px, 100% 5px, 100% 9px;
+  background-position:bottom left, top left, top left;
+  background-repeat:repeat-x;
+  transform-origin:center;
+  transform:rotate(0deg) scale(1.02);
+  transition:transform .9s ease, filter .8s ease;}
+#bandIn b{font-weight:700;font-size:15px;transition:font-size .5s}
+
+/* ===== 대화 ===== */
 .npc{display:flex;align-items:center;gap:10px;margin:14px 0 12px}
-.chip{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--green);
-  background:var(--card);color:var(--green-d);display:flex;align-items:center;
-  justify-content:center;font-size:13px;font-weight:600}
-.npcname{font-size:12px;color:var(--ink3)}
-.say{font-size:15.5px;line-height:1.8;margin:0 0 20px;white-space:pre-line}
+.chip{width:34px;height:34px;border-radius:2px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink2);display:flex;align-items:center;
+  justify-content:center;font-family:var(--f-mono);font-size:12px}
+.npcname{font-size:10.5px;letter-spacing:.3em;font-family:var(--f-mono);
+  color:var(--paper);background:var(--ink2);padding:4px 9px;transform:rotate(-.5deg)}
+.say{font-size:15.5px;line-height:1.85;margin:0 0 20px;white-space:pre-line}
 .recall{font-size:16px;line-height:1.95;margin:26px 0;white-space:pre-line}
 .see{font-size:17px;line-height:1.9;margin:70px 0 60px;text-align:center;white-space:pre-line}
-.tapHint{text-align:center;font-size:12px;color:var(--ink3);margin:26px 0 10px}
+.tapHint{text-align:center;font-size:12px;color:var(--ink3);margin:26px 0 10px;
+  font-family:var(--f-mono);letter-spacing:.12em}
+
+/* ===== 선택지: 박음질 3결 ===== */
 .ch{display:block;width:100%;text-align:left;background:var(--paper);
-  border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin:9px 0;color:var(--ink)}
-.ch.big{font-size:18px;font-weight:600;line-height:1.5;border-color:#B8B29E}
-.ch.mid{font-size:15px;line-height:1.6;color:#3A382F}
-.ch.small{font-size:13.5px;line-height:1.7;opacity:.65}
+  border:1px solid var(--line);border-radius:0;padding:13px 15px;margin:9px 0;color:var(--ink)}
 .ch:active{background:var(--card)}
-.lm{height:96px;border-radius:10px;background:#DDD8C8;display:flex;align-items:center;
-  justify-content:center;color:#8A8574;font-size:12px;margin:14px 0 12px;overflow:hidden}
+.ch.big{font-size:17.5px;font-weight:700;line-height:1.55;
+  border:4px double var(--ink);background:#F6F1E3;
+  transform:rotate(-.3deg);}
+.ch.mid{font-size:15px;line-height:1.6;color:#3A382F;
+  border:1px solid var(--ink);transform:rotate(.25deg);}
+.ch.small{width:90%;margin-left:10%;text-align:right;
+  font-family:var(--f-hand);font-size:19px;line-height:1.5;
+  color:var(--ink2);background:transparent;
+  border:2px dashed #B7AF9C;padding:9px 13px 11px;
+  transform:rotate(-.5deg);}
+
+/* ===== 걷기 / 도착 ===== */
+.btn{display:block;width:100%;background:var(--green);color:var(--paper);border:0;
+  border-radius:2px;padding:15px;font-size:16px;font-weight:700;margin:10px 0;
+  font-family:var(--f-body);letter-spacing:.04em}
+.btn.ghost{background:transparent;color:var(--green-d);border:1px dashed var(--line)}
+.btn.sm{padding:11px;font-size:14px}
+.lm{height:96px;border-radius:2px;background:var(--card);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;color:var(--ink3);
+  font-family:var(--f-mono);font-size:11px;margin:14px 0 12px;overflow:hidden}
 .lm img{width:100%;height:100%;object-fit:cover}
-.guide{font-size:15px;line-height:1.75;margin:0 0 16px}
-#dist{text-align:center;font-size:13px;color:var(--ink2);margin:8px 0 4px}
-#dist b{font-size:22px;font-weight:600;color:var(--ink)}
-#acc{text-align:center;font-size:11px;color:var(--ink3);margin-bottom:14px}
-.toast{background:var(--card);border-radius:10px;padding:12px 14px;font-size:12.5px;
-  line-height:1.6;color:var(--green-d);margin:12px 0}
-.toast b{font-weight:600}
+.guide{font-size:15px;line-height:1.8;margin:0 0 16px}
+#dist{text-align:center;font-size:13px;color:var(--ink2);margin:8px 0 4px;font-family:var(--f-mono)}
+#dist b{font-size:22px;font-weight:700;color:var(--ink)}
+#acc{text-align:center;font-size:11px;color:var(--ink3);margin-bottom:14px;font-family:var(--f-mono)}
+.toast{background:var(--card);border:1px solid var(--line);border-radius:2px;
+  padding:12px 14px;font-size:12.5px;line-height:1.6;color:var(--green-d);margin:12px 0}
+.toast b{font-weight:700}
 .srow{display:flex;gap:8px;align-items:center;margin:7px 0;font-size:13px}
-.srow button{flex:0 0 auto;background:var(--green);color:#fff;border:0;border-radius:8px;padding:9px 12px;font-size:13px}
+.srow button{flex:0 0 auto;background:var(--green);color:#fff;border:0;border-radius:2px;
+  padding:9px 12px;font-size:13px}
 .srow span{flex:1;color:var(--ink2);font-size:12px}
-textarea{width:100%;height:150px;font-family:ui-monospace,Menlo,monospace;font-size:11px;
-  border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff;color:#222}
-.fade{animation:f .45s ease}
-@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+textarea{width:100%;height:150px;font-family:var(--f-mono);font-size:11px;
+  border:1px solid var(--line);border-radius:2px;padding:10px;background:#fff;color:#222}
 
-/* v0.4.0 */
-.wrap{min-height:78dvh}
-html,body{transition:background-color .5s ease}
-#band,#bandIn{transition:background-color .5s ease, transform .8s ease, filter .8s ease}
+/* ===== 전환 ===== */
 .fade{animation:f .55s ease}
-body.night{background:#26241F}
-body.night #band{background:#26241F}
-body.night .recall,body.night .see,body.night h1{color:#F4F1E8}
-body.night .tapHint,body.night .small{color:#8A8574}
-body.night .mid{color:#B8B29E}
-body.night p{color:#DDD8C8}
-body.night .btn.ghost{color:#B9C9B4;border-color:#4a4740}
-.ch.big{text-align:left;border-width:1.5px;border-color:#9C9683;background:#F7F5EE}
-.ch.mid{text-align:left;border-color:#CFC9B6}
-.ch.small{text-align:right;background:var(--paper);border-color:#E0DBC9;color:#6B675A;
-  width:90%;margin-left:10%;padding:12px 15px;font-size:14px;line-height:1.65}
-.settleMain{font-size:22px;line-height:1.8;margin:90px 0 40px;text-align:center;white-space:pre-line}
-.settleNum{font-size:15px;text-align:center;color:#B8B29E;line-height:2}
+@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+html,body{transition:background-color .5s ease}
 
-/* 챕터 카드 */
-.chapNum{font-size:13px;letter-spacing:6px;color:#8A8574;text-align:center;margin:70px 0 26px}
+/* ===== 밤(공장 어둠) ===== */
+body.night{background:var(--night)}
+body.night #band{background:var(--night)}
+body.night .recall,body.night .see,body.night h1{color:#F0EADB}
+body.night .tapHint,body.night .small{color:#8A8071}
+body.night .mid{color:#A79F8E}
+body.night p{color:#DCD4C2}
+body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
+
+/* ===== 결산: 오늘 뜬 땀 + 검사필 ===== */
+.settleMain{font-size:22px;line-height:1.85;margin:90px 0 34px;text-align:center;
+  white-space:pre-line;font-family:var(--f-serif);font-weight:700}
+.settleNum{font-size:14px;text-align:center;color:var(--ink3);line-height:2;
+  font-family:var(--f-mono)}
+.settleNum::before{content:"";display:block;width:190px;height:3px;margin:0 auto 22px;
+  background:repeating-linear-gradient(90deg,var(--green) 0 14px,transparent 14px 25px);
+  transform:rotate(-1deg)}
+.settleNum::after{content:"검사필";display:block;width:78px;height:50px;margin:36px auto 0;
+  border:2.5px solid var(--seal);color:var(--seal);
+  font-family:var(--f-serif);font-weight:700;font-size:17px;
+  letter-spacing:.2em;text-indent:.2em;line-height:45px;text-align:center;
+  transform:rotate(-6deg);opacity:.9;
+  -webkit-mask-image:radial-gradient(circle at 36% 44%,#000 58%,transparent 76%,#000 92%);
+  mask-image:radial-gradient(circle at 36% 44%,#000 58%,transparent 76%,#000 92%);
+  animation:stamp .35s cubic-bezier(.3,1.4,.4,1) .9s both}
+@keyframes stamp{from{opacity:0;transform:rotate(-2deg) scale(1.4)}
+  to{opacity:.9;transform:rotate(-6deg) scale(1)}}
+
+/* ===== 챕터 카드: 견본 태그 ===== */
+.chapNum{font-size:11px;letter-spacing:.4em;color:var(--ink2);text-align:center;
+  margin:70px 0 26px;font-family:var(--f-mono)}
 .chapCard{animation:unfold .8s cubic-bezier(.2,.7,.2,1)}
 @keyframes unfold{from{clip-path:inset(0 50% 0 50%);opacity:0}to{clip-path:inset(0 0 0 0);opacity:1}}
-.chapPort{width:120px;height:120px;border-radius:50%;margin:0 auto 22px;display:flex;align-items:center;
-  justify-content:center;border:1.5px solid var(--green);background:#33312A;color:#B9C9B4;
-  font-size:40px;font-weight:600;overflow:hidden}
-.chapPort img{width:100%;height:100%;object-fit:cover}
-.chapName{font-size:26px;font-weight:600;color:#F4F1E8;text-align:center;letter-spacing:1px;
-  animation:sprd 1.1s ease}
+.chapPort{position:relative;width:132px;height:132px;border-radius:2px;margin:0 auto 22px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid #4A463E;background:#2A2721;color:#9FB39C;
+  font-family:var(--f-mono);font-size:34px;font-weight:700;overflow:hidden}
+.chapPort pre.chapObj{font-family:var(--f-mono);font-size:9px;line-height:10px;
+  color:#9FB39C;margin:0;white-space:pre;text-align:left}
+.chapPort::before{content:"";position:absolute;z-index:2;top:11px;left:50%;margin-left:-6px;
+  width:12px;height:12px;border-radius:50%;background:var(--night);
+  box-shadow:0 0 0 3px #3E3A32}
+.chapName{font-size:26px;font-weight:700;color:#F0EADB;text-align:center;letter-spacing:1px;
+  font-family:var(--f-serif);animation:sprd 1.1s ease}
 @keyframes sprd{from{letter-spacing:14px;opacity:0}to{letter-spacing:1px;opacity:1}}
-.chapSub{font-size:14px;color:#B8B29E;text-align:center;margin-top:14px;line-height:1.7}
+.chapSub{font-family:var(--f-hand);font-size:20px;color:var(--ink3);text-align:center;
+  margin-top:14px;line-height:1.55;transform:rotate(-.6deg)}
 
-#app{min-height:100dvh;transition:background-color .5s ease}
-#band{transition:opacity .7s ease, max-height .7s ease, padding .7s ease}
-#band.hidden{opacity:0;max-height:0;padding:0;overflow:hidden;pointer-events:none}
-.titleWrap{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:14vh}
-.tAddr{font-size:12px;letter-spacing:3px;color:#8A8574;margin-bottom:30px}
-.tMain{font-size:42px;font-weight:700;color:#F4F1E8;letter-spacing:2px;line-height:1.25;margin:0;
-  animation:tin 1.4s cubic-bezier(.2,.7,.2,1)}
+/* ===== 타이틀: 옷본 한 장 ===== */
+.titleWrap{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:11vh}
+.tAddr{font-size:11px;letter-spacing:.28em;color:var(--ink2);margin-bottom:26px;
+  font-family:var(--f-mono)}
+.tMain{font-size:42px;font-weight:700;color:#F0EADB;letter-spacing:2px;line-height:1.25;margin:0;
+  font-family:var(--f-serif);animation:tin 1.4s cubic-bezier(.2,.7,.2,1)}
 @keyframes tin{from{letter-spacing:18px;opacity:0}to{letter-spacing:2px;opacity:1}}
-.tRule{width:34px;height:2px;background:var(--green);margin:26px 0 22px;transform:rotate(-1.5deg)}
-.tSub{font-size:13.5px;color:#B8B29E;line-height:1.9;margin:0 0 44px}
+.tPat{position:relative;margin:24px 0 20px}
+.tAsc{font-family:var(--f-mono);font-size:8.5px;line-height:10px;color:#7E7565;
+  white-space:pre;margin:0;text-align:left}
+.tThread{position:absolute;left:9%;width:64%;top:63%;height:3px;
+  background:repeating-linear-gradient(90deg,var(--green) 0 14px,transparent 14px 25px);
+  transform:rotate(1.5deg);transform-origin:left center}
+.tThread::after{content:"";position:absolute;right:-6px;top:-3px;
+  width:9px;height:9px;border-radius:50%;background:var(--green)}
+.tSub{font-family:var(--f-hand);font-size:20px;color:var(--ink3);line-height:1.6;
+  margin:0 0 34px;transform:rotate(-.5deg)}
 .tBtns{width:100%;max-width:300px}
-.tNote{font-size:11.5px;color:#7A7568;line-height:1.85;margin-top:34px;letter-spacing:.2px}
-.tVer{font-size:11px;color:#57534A;margin-top:22px}
+.tNote{font-size:11.5px;color:#7A7568;line-height:1.9;margin-top:34px;letter-spacing:.2px}
+.tVer{font-size:10.5px;color:#57534A;margin-top:22px;font-family:var(--f-mono);letter-spacing:.18em}
+
+@media (prefers-reduced-motion: reduce){
+  .chapCard,.chapName,.tMain,.settleNum::after{animation:none}
+  .fade{animation:none}
+  html,body,#band,#bandIn,#app{transition:none}
+}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -117,7 +200,7 @@ body.night .btn.ghost{color:#B9C9B4;border-color:#4a4740}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v0.5.0";
+var VERSION = "v0.7.0";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -131,255 +214,288 @@ var SPOTS = [
 var SAVED = localStorage.getItem('im_spots');
 if(SAVED){ try{ SPOTS = JSON.parse(SAVED); }catch(e){} }
 
-/* ===== 인트로 (7컷) ===== */
+/* ===== 인트로 (8컷) ===== */
 var INTRO = [
-"1992년 겨울.\n봉제공장 셔터를 내렸다.\n재봉틀 열두 대를 팔았다.\n마지막 한 대는 안 팔았다.",
-"이 언덕에 자투리땅이 나왔다.\n경사지고 좁았다. 그래서 쌌다. 그래서 살 수 있었다.\n평생 모은 돈에 은행 돈을 얹었다.\n그 빚이 아직 6억 남아 있다.",
-"옆집은 목수 영감이 지은 집이었다.\n담벼락이 자로 잰 것 같았다.\n계약하고 오는 길에 그 담을 손으로 쓸어봤다.\n\n손이 부끄러웠다.\n그날부터 새벽마다 쓸어보고 갔다.",
-"아내가 그랬다.\n여보, 그냥 좁게 짓자. 좁아도 반듯한 게 낫지.\n\n나는 대답을 안 했다.\n지고 싶지 않아서.",
-"나는 딱 하나만 정했다.\n1층은 무조건 옆집보다 넓게.\n\n시공하던 사람이 그랬다.\n사장님, 이러면 아래 마감이 안 삽니다.\n\n내가 그랬다.\n마감은 나중에 고치면 되는데, 평수는 못 고쳐.",
-"1994년 봄 준공. 아내가 시루떡을 쪘다.\n페인트는 아내가 골랐다. 초록으로.\n\n준공하고 나니 돈이 없었다. 마감은 나중에 하기로 했다.\n아내는 2년을 더 살고 갔다.\n나중은 30년이 됐다.",
-"나는 일흔여덟이다.\n아직 그 집에 산다. 1층은 비어 있다.\n골목에 재개발 동의서가 돈다.\n\n지금부터 당신은 김씨입니다."
+"1992년 겨울.\n이웃집 홍씨네 영감이 땅을 사서 부자가 되었다는 말을 들었다.\n\n봉제공장 셔터를 내렸다.\n내 손과 발이 되어주던 재봉틀 열두 대를 팔았다.",
+"차마 한 대는 못 팔았다.\n\n그렇지만 언제까지 미싱을 하고 살 순 없는 노릇 아닌가.",
+"이태원에 자투리땅이 있다는데 경사지고 좁았다.\n어딘가 비틀어진 마감이었다.\n\n그치만 시세보다 싸단다. 결국 나는 그 땅을 샀다.\n평생 모은 돈에 은행 돈을 얹었다.\n그 빚이 아직 6억 남아 있다.",
+"옆집은 목수 영감이 제 손으로 지은 집이었다.\n\n고르고 골랐는데 하필. 담벼락이 자로 잰 것 같았다.\n계약하고 오는 길에 그 담을 손으로 쓸어봤다.\n\n나는 손을 팔았고 저 영감은 안 팔았구나.\n그 생각을 그날 처음 했다.",
+"아내가 그랬다.\n\"여보, 그냥 좁게 짓자. 좁아도 반듯한 게 낫지.\"\n\n나는 대답을 안 했다.\n\n지고 싶지 않아서.",
+"나는 딱 하나만 정했다.\n1층은 무조건 옆집보다 넓게.\n\n시공하던 사람이 그랬다.\n사장님, 이러면 아래 마감이 안 삽니다.\n내가 그랬다.\n마감은 나중에 고치면 되는데, 평수는 못 고쳐.\n\n마감. 삼십 년을 마감으로 먹고산 놈이 한 소리다.",
+"1994년 봄 준공. 아내가 시루떡을 쪘다.\n페인트는 아내가 골랐다. 초록으로.\n\n준공하고 나니 돈이 없었다. 마감은 나중에 하기로 했다.\n아내는 이 집에서 2년을 더 살고 갔다.\n\n나중은 삼십 년이 됐다.",
+"나는 일흔여덟이다.\n아직 그 건물 꼭대기에 산다. 1층은 비어 있다.\n골목에 재개발 동의서가 돈다.\n\n지금부터 당신은 김씨입니다."
 ];
 
 /* ===== 걷기 ===== */
 var WALK = [
- {to:1, txt:"회나무로13나길을 따라 서쪽으로 걸으세요.\n왼쪽에 숲 놀이터가 나타나면, 그 입구쯤에서 멈추세요.\n길 건너에 그 건물이 있습니다."},
+ {to:1, txt:"회나무로13나길을 따라 서쪽으로 걸으세요.\n왼쪽에 숲 놀이터가 나타나면 그 입구쯤에서 멈추세요.\n길 건너에 그 건물이 있습니다."},
  {to:2, txt:"건물을 등지고 골목을 따라 더 내려가세요.\n골목 끝이 넓어지는 곳까지."},
  {to:3, txt:"왔던 골목을 그대로 되짚어 오르세요.\n서두르지 마세요. 숨이 조금 차야 맞습니다.\n건물을 지나, 모퉁이에서 왼쪽 오르막으로.",
   mid:"사람들이 우리 집을 언덕집이라고 한다.\n언덕은 무슨. 이 길로 와보라고 하면 다들 말이 없다.\n이게 평지지, 뭐가 평지야.\n\n올라오다 전봇대에서 한 번 서긴 한다.\n그건 길 때문이 아니라 내 나이 때문이다."},
- {to:4, txt:"가파른 길로 내려가세요.\n사장님이 안 다니시던 그 길로."},
- {to:5, txt:"건물을 향해 다시 올라가세요.\n이번에는 지나치지 말고, 건물 옆 주차장으로 들어가세요.\n처음으로, 집에 닿는 거리입니다."}
+ {to:4, txt:"가파른 길로 올라가세요.\n사장님이 삼십 년 동안 아무도 안 데려온 그 길로."},
+ {to:5, txt:"건물을 향해 다시 내려가세요.\n이번에는 지나치지 말고 건물 옆 주차장으로 들어가세요.\n\n처음으로, 집에 닿는 거리입니다."}
+];
+
+/* ===== 챕터 카드 사물 (옷본 UI) ===== */
+var OBJ = [
+"    _____________\n   /            /|\n  /___________ / |\n |            |  |\n |  =======   |  |\n |  =======   | /\n |____________|/",
+"     _______\n    |       |\n   _|_______|_\n  |  ~~~~~~~  |\n  |           |\n  |           |\n  |___________|",
+"    ______\n   /      \\__\n  |  o        \\\n  |____   _____|\n      |  |\n   ___|__|___\n  |__________|",
+"     ||\n     ||\n     ||\n     ||\n    /||\\\n   /||||\\\n  /||||||\\\n /||||||||\\",
+"   ________________\n  |   ____         |\n  |  |    |        |\n  |__|____|________|\n  |________________|\n       \\______/",
+"   ________________\n  |                |\n  | ______________ |\n  | ______________ |\n  | ______________ |\n  |                |\n  | ____           |\n  |________________|"
 ];
 
 /* ===== 세션 데이터 =====
-choices: [텍스트, 크기, dR, dV(0.1억), 속말, 특수] */
+choices: [텍스트, 크기, dR, dV(0.1억), 속말, 특수]
+크기: big=우김 / mid=깎기 / small=속말 */
 var S = [
-{ spot:0, name:"파프리 공인중개사", ini:"파", sub:"이 골목 삼십 년.<br>당신 건물만 빼고 다 파는 사람.",
-  see:"간판을 보세요. 파프리 공인중개사.\n이 골목에서 삼십 년 된 이름입니다.\n\n유리문의 매물 종이들을 보세요.\n이 골목 건물이 다 붙어 있습니다.\n\n당신 건물만 없습니다.",
-  recall:["이 사무소가 생긴 게 우리 건물 준공하던 해다.\n저 사람이 첫 세입자를 붙여줬다.",
-"계약서 쓰던 날 저 사람이 그랬다.\n사장님, 이 건물 1층이 골목서 제일 넓네요.\n\n나는 그 말을 삼십 년 기억한다.\n저 사람은 기억 못 할 거다."],
+{ spot:0, name:"파프리 공인중개사", ini:"파", sub:"이 골목 삼십 년.<br>김씨에게 땅을 팔고, 모든 세입자를 계약해준 사람",
+  see:"이제부터 이곳은 파프리 공인중개사입니다.\n삼십 년 전 당신에게 그 땅을 팔았던 곳이지요.\n원룸도 투룸도 다 이 집에서 빼줍니다.\n\n유리문 안에서 중개인이 부산을 떨며 무언가 찾고 있습니다.\n당신은 기다리고 있습니다.",
+  recall:["이 부동산이 생긴 게 우리 건물 준공하던 해였다.\n저 사람이랑 나랑 이 골목 나이가 같다.",
+"첫 세입자 계약서 쓰던 날 저 사람이 그랬다.\n\"사장님, 이 건물 1층이 골목서 제일 넓네요.\"\n\n나는 그 말을 삼십 년 기억한다.\n저 사람은 기억 못 할 거다."],
   beats:[
-   {say:'"김 사장님. 앉아요, 커피 식었는데.\n아침에 조합에서 다녀갔어요. 사장님 얘기만 하다 갔어요.\n\n오늘은 대답을 좀 하셔야 돼요.\n삼십 년째 안 하시잖아요."',
-    ch:[["대답 안 해서 삼십 년 버틴 거야.","big",1,0,0],
-        ["뭐라고 대답하라고. 아직 아무것도 안 정했어.","mid",0,0,0],
-        ["…내가 삼십 년 그랬나. 자네가 세는구먼.","small",0,0,1]],
-    re:['"그 버티기가 이제 안 통해요. 요즘은 값으로 밀어요."',
-        '"그러니까 오늘 정하시라고요."',
-        '"세죠. 사장님 건물만 삼십 년 봤는데요."'], gauge:true},
-   {say:'"저거 봐요, 위에 뜬 거.\n왼쪽이 재개발 열기고, 오른쪽이 사장님 건물 감정가예요.\n\n건물 자랑을 하면요, 돈 된다는 소문이 돌아요. 그럼 왼쪽이 올라요. 75 되면 끝이에요.\n반대로 흉을 보면 감정가가 내려요. 6억 밑으로 꺼지면 은행이 가져가요. 대출이 6억이잖아요.\n\n…그럼 어쩌라는 거냐. 사실대로만 말하는 거죠.\n오래됐고, 손 갈 데 있고, 그래도 서 있는 건물이라고.\n사실은 소문이 안 돼요. 심심해서.\n\n근데 사장님, 사장님이 그걸 하실 수 있겠어요?"',
-    ch:[["자랑할 거야. 제일 넓은 건물이니까.","big",2,4,0],
-        ["흉볼 거야. 물 새는 건물이라고.","mid",-2,-4,0],
-        ["…사실대로가 제일 어렵구먼.","small",0,0,1]],
-    re:['"그럼 왼쪽이 오르겠네요. 보세요, 오르나."',
-        '"그 말 은행 귀에도 들어가요."',
-        '"어렵죠. 삼십 년 안 해보신 거니까."']},
-   {say:'"그 봉제집 아주머니 기억나세요? 첫 세입자요.\n나가면서 그러더라고요. 주인 양반이 자꾸 내려온다고.\n고쳐주는 것도 아니고 문 앞에서 미싱 소리만 듣다 간다고.\n\n나는 감시하시는 줄 알았어요. …아니었죠?"',
-    ch:[["감시는 무슨. 내 건물인데 못 내려가나.","big",0,2,0],
-        ["그런 얘길 왜 이제 해.","mid",0,0,0],
-        ["…공장 접고 나니까, 그 소리가 그렇게 듣고 싶더라고.","small",0,0,1]],
-    re:['"네. 그렇겠죠."',
-        '"말할 자리가 없었죠. 사장님이 앉으신 게 오늘이 처음인데."',
-        '"그 아주머니한테 그렇게 말씀하시지 그러셨어요."']},
-   {say:'"가시기 전에 하나만요.\n나 장부에 그 건물을 주소로 안 적어놨어요.\n손님들이 그 이름으로 물어보거든요. 주소보다 그게 빨라서.\n\n…오늘은 안 알려드릴래요. 어차피 듣게 되실 거예요."',
-    ch:[["바꿔 적어. 김씨 건물이라고.","big",1,2,0],
-        ["맘대로 적어. 장부가 값 매기나.","mid",0,0,0],
-        ["…나 그 이름 압니다. 삼십 년 됐어요.","small",0,0,1]],
-    re:['"고쳐드릴게요. 근데 손님들 입은 내가 못 고쳐요."',
-        '"매겨요. 이름이 값을 매겨요."',
-        '"……알고 계셨구나. (장부를 덮는다)"']},
-   {say:'"다녀오세요.\n골목이 좁아서, 사장님 말이 사장님보다 빨라요.\n\n저녁에 다시 들르세요.\n어차피 나한테 다 들어와요."', ch:[], re:[]}
+   {say:"\"김 사장님? 커피 식으니까 들면서 들어요.\n\n오늘 아침에 재개발 조합에서 다녀갔어요.\n사장님 얘기만 하다 갔어.\n\n오늘은 대답을 좀 하셔야 돼요. 십 년째 안 하시잖아요.\n\n재개발 동의하실 거예요? 안 하실 거예요?\"",
+    ch:[["내가 대답을 안 해서 이 동네가 십 년 버틴 거야.", "big", 1, 2, 0],
+        ["대답할 게 뭐 있어. 다 쓰러져가는 동네인데.", "mid", -1, -2, 0],
+        ["…내가 십 년 그랬나. 그걸 자네가 세고 있었구먼.", "small", 0, 0, 1]],
+    re:["\"그 버티기 이제 안 통해요. 거의 다 동의한 거 몰라요?\"",
+        "\"그 말 조합 귀에 들어가면 값부터 깎여요.\"",
+        "\"세죠. 저도 이 골목 삼십 년인데요.\""], gauge:true},
+   {say:"\"사장님, 저거 봐요, 위에 뜬 거.\n왼쪽이 재개발 열기고, 오른쪽이 사장님 건물 감정가예요.\n\n건물 자랑을 하면요, 돈 된다는 소문이 돌 겁니다.\n하나라도 높은 값에 사려고 혈안이 되겠죠.\n재개발 열기가 75%가 넘으면 사장님 동의 없어도 진행될 거예요.\n\n반대로 흉을 보잖아요? 점점 집의 가치가 떨어질 겁니다.\n6억 밑으로 꺼지면 은행이 가져가요. 사장님네 대출이 6억이잖아요.\n\n…그럼 어쩌라는 거냐. 사실대로만 말하는 거죠.\n오래됐고, 손 갈 데 있고, 그래도 서 있는 건물이라고.\n사실은 소문이 안 나요. 심심하니까.\n\n근데 사장님, 사장님이 그걸 하실 수 있겠어요?\"",
+    ch:[["사실인 걸 뭐. 자랑할 거야. 제일 넓은 건물이니까.", "big", 2, 4, 0],
+        ["흉볼 거야. 물 새는 건물이라고.", "mid", -2, -4, 0],
+        ["…사실대로가 제일 어렵구먼.", "small", 0, 0, 1]],
+    re:["\"그럼 왼쪽이 오르겠네요. 보세요, 오르나 안 오르나.\"",
+        "\"그 말은 은행 귀에도 들어갈걸요.\"",
+        "\"어렵죠. 삼십 년 안 해보신 거니까.\""]},
+   {say:"\"1층 그 아주머니요. 사장님네 첫 세입자.\n삼십 년 계시다 올봄에 나가셨죠.\n\n나가면서 그러시더라고요. 주인 양반이 자꾸 내려온다고.\n고쳐주는 것도 아니고 문 앞에서 미싱 소리만 듣다 간다고.\n\n저는 감시하시는 줄 알았어요. …아니었죠?\"",
+    ch:[["감시는 무슨. 내 건물인데 못 내려가나.", "big", 1, 2, 0],
+        ["그 집이 뭐 대단하다고. 나가서 잘된 거지.", "mid", -1, -2, 0],
+        ["…그 아주머니한테는 아직 말을 못 했네.", "small", 0, 0, 1]],
+    re:["\"그건 그렇죠. 사장님 건물이니까.\"",
+        "\"삼십 년 계셨는데요, 사장님.\"",
+        "\"오늘 이따 오실 거예요. 열쇠 돌려주신다고.\""]},
+   {say:"\"사실 장부에 그 건물 주소로 안 적어놨어요.\n손님들이 그 이름으로 물어보거든요. 주소보다 그게 빨라서.\n\n(눈치를 보며) 알고 계셨어요…?\n\n…오늘은 안 알려드릴래요. 어차피 듣게 되실 테니까.\"",
+    ch:[["이태원 맨션이라는 멀쩡한 이름이 있는데!", "big", 2, 2, 0],
+        ["뭐라고 적든. 저런 건물에 이름은 무슨.", "mid", -2, -4, 0],
+        ["…마감 후진 집. 그렇게 적어놨나.", "small", 0, 0, 1]],
+    re:["\"고쳐드릴게요. 근데 손님들 입은 내가 못 고쳐요.\"",
+        "\"이름이 값을 매겨요, 사장님.\"",
+        "\"……알고 계셨구나. (장부를 덮는다)\""]},
+   {say:"\"얼른 결정하시고 알려주세요.\n오늘 골목 한 바퀴 돌아보시고요.\n\n저녁에 다시 들르세요.\n어차피 제가 다 알고 있을 겁니다.\"",
+    ch:[],
+    re:[]}
   ]},
 
-{ spot:1, name:"최고령 주민", ini:"주", sub:"골목 사십 년.<br>김씨보다 먼저 온 사람.",
-  see:"길 건너에서 1층을 보세요.\n언덕에 눌려서, 반쯤 파묻혀 있습니다.\n\n저 1층이 등기부상 이 골목에서 제일 넓습니다.\n그렇게 보입니까?",
+{ spot:1, name:"최고령 주민", ini:"주", sub:"골목 사십 년.<br>김씨보다 먼저 온 사람. 김씨의 아내를 아는 사람",
+  see:"길 건너에서 1층을 보세요.\n언덕에 눌려서 반쯤 파묻혀 있지 않나요?\n\n저 1층이 등기부상 이 골목에서 제일 넓습니다.\n진짜 그렇게 보입니까?",
   recall:["경사지에서 평수를 뽑으려니\n건물이 언덕 아래로 몸을 내밀어야 했다.",
-"등기부에는 내가 이겼다고 적혀 있다. 골목에서 제일 넓다고.\n근데 겉에서 보면 제일 좁아 보이는 게 저 1층이다.",
-"저 초록 띠, 기울어 보이지.\n건물이 기운 게 아니다. 길이 기운 거다.\n나는 삼십 년째 그렇게 말한다."],
+"등기부에는 내가 이겼다고 적혀 있다. 골목에서 제일 넓다고.\n근데 겉에서 보면 제일 좁아 보이는 게 저 1층이다. 나도 안다.",
+"저 초록 띠, 기울어 보이지. 길이 기운 거다.\n페인트는 아내가 골랐다. 그것만은 내가 안 고쳤다."],
   beats:[
-   {say:'"김씨 아니야. 여기 서 있을 줄 알았어.\n\n…나 이거 받았어. (접힌 종이를 꺼내 보인다)\n어제도 조합에서 두 시간 앉았다 갔어. 아들네 가서 편히 사시라고.\n\n나 아직 안 썼어. 자네 보고 정하려고."',
-    ch:[["쓰지 마시오. 나 안 쓰는데 왜 쓰시오.","big",-2,-2,0],
-        ["쓰든 말든 어르신 마음이지.","mid",0,0,0],
-        ["…나 보고 정한다는 말은 마시오. 그 말 무겁소.","small",-1,0,1]],
-    re:['"…자네가 그렇게 말할 줄 알았어. 그럼 나도 좀 더 뭉개보지."',
-        '"물어보지. 사십 년을 같이 살았는데. 자네가 남인가."',
-        '"무거우면 자네가 지게. 자네 때문에 안 쓰는 거 맞으니까."']},
-   {say:'"근데 김씨, 저 1층 말이야. 넓다며. 등기부에 제일 넓다고 돼 있다며.\n넓다는 집이 왜 저렇게 웅크리고 있어?\n\n저 초록 띠도 삐뚜름해. 길 따라 칠해놔서 멀리서 보면 집이 기운 것 같아.\n수평으로 칠하지 그랬어."',
-    ch:[["기운 건 길이오. 내가 왜 길한테 맞추시오.","big",2,4,0],
-        ["이제 와서 뭘. 다 삐뚤어진 건물인데.","mid",-1,-4,0],
-        ["…수평으로 칠해봤소, 한 번. 길이랑 어긋나 보여서 도로 돌렸고.","small",0,0,1]],
-    re:['"하이고, 길이 기울었대. 사십 년째 자네다워."',
-        '"그런 말 말어. 집 듣겠네."',
-        '"……해봤구나. 나는 자네가 고집만 부린 줄 알았지."']},
-   {say:'"김씨, 솔직히 말해봐.\n이 골목, 살 만한 데야?\n\n계단은 얼고, 여름엔 하수구 냄새 나고, 슈퍼도 없어졌어.\n물 한 병 사러 큰길까지 나가.\n\n자네가 그렇다고 하면 나 쓸라고. 아니라고 하면 안 쓸 거고."',
-    ch:[["좋은 골목이오. 사십 년 사셨으면 아시잖소.","big",2,6,0],
-        ["솔직히 여긴 끝났소. 어르신도 아시잖소.","mid",9,-8,0,"elder"],
-        ["…나도 모르겠소. 근데 나는 여기밖에 없소.","small",-1,0,1]],
-    re:['"자네가 그러면 그런 거지. (종이를 도로 접는다) 나도 안 쓰네."',
-        '"…자네도 그렇게 생각했구나. (한참 종이를 본다) 그럼 나 쓰겠네. 자네가 그러면 맞는 거지."',
-        '"나도 여기밖에 없어. (웃는다) 우리 둘 다 갈 데가 없구먼."']},
-   {say:'"가봐.\n골목 좁아서, 자네 말은 자네보다 빨리 돌아."', ch:[], re:[], altElder:'"김씨. 나 자네한테 서운한 거 아니야.\n자네 입으로 그 말 듣고 나니까, 이제 안 붙들고 있어도 되겠다 싶어서.\n\n마흔 해 붙들었으면 오래 붙들었지."'}
+   {say:"\"김씨 아니야. 여기 서 있을 줄 알았어.\n\n…나 이거 받았어. (접힌 종이를 꺼내 보인다)\n어제도 조합에서 두 시간 앉았다 갔어. 아들네 가서 편히 사시라고.\n\n나 아직 안 썼어. 자네 보고 정하려고.\"",
+    ch:[["그딴 거 쓰지 마시오. 나 안 쓰는데 왜 쓰시오.", "big", -2, -2, 0],
+        ["쓰든 말든 어르신 마음이지. 나한테 왜 물어보시오.", "mid", 0, -2, 0],
+        ["…나 보고 정한다는 말은 마시오. 그 말 무겁소.", "small", 0, 0, 1]],
+    re:["\"자네가 그럴 줄 알았어. 그럼 나도 좀 더 뭉개보지.\"",
+        "\"물어보지. 사십 년을 같이 살았는데. 자네가 남인가.\"",
+        "\"무거우면 자네가 지게. 자네 때문에 안 쓰는 거 맞으니까.\""]},
+   {say:"\"근데 김씨, 저 초록 띠 말이야. 삐뚜름해.\n길 따라 칠해놔서 멀리서 보면 집이 기운 것 같아.\n\n수평으로 좀 칠하지 그랬어.\"",
+    ch:[["기울어 보이는 건 착시요. 길이 기운 거지.", "big", 2, 4, 0],
+        ["이제 와서 뭘. 어차피 다 삐뚤어진 건물인데.", "mid", -2, -4, 0],
+        ["…저 색은 아내가 골랐소. 그것만은 안 고쳤소.", "small", 0, 0, 1]],
+    re:["\"하이고, 착시래. 사십 년째 자네답네.\"",
+        "\"그런 말 말어. 집 듣겠네.\"",
+        "\"…알지. 자네 색시가 골랐지.\n시루떡 돌리던 날 내가 얻어먹었어.\""]},
+   {say:"\"김씨, 내가 하나 물어봐도 되나.\n\n자네 색시가 준공 전에 우리 집에 온 적이 있어.\n좁게 짓자고 했는데 자네가 대답을 안 한다고. 나보고 말 좀 해달라고.\n\n…나 그 말 안 전했어. 부부 일에 낀다 싶어서.\n사십 년 그게 걸리네.\"",
+    ch:[["좁게 지었으면 이 값도 못 받소. 내 말이 맞았지.", "big", 2, 4, 0],
+        ["다 지난 얘기요. 그 사람도 갔고 집도 이 꼴이고.", "mid", -1, -4, 0],
+        ["…그때 대답을 안 한 게 아니라 못 한 거요. 대답하면 지는 거라.", "small", 0, 0, 1]],
+    re:["\"그래. 자네 말이 맞았지.\n근데 색시는 그 값 못 봤잖아.\"",
+        "\"지난 얘기라고 안 아픈가.\"",
+        "\"……. (한참 있다가)\n그럼 사십 년을 이겨서 뭐 했나, 자네.\""]},
+   {say:"\"김씨, 이제 솔직히 말해봐. 이 골목, 살 만한 것 같아?\n\n계단은 얼고 여름엔 하수구 냄새 나고 슈퍼도 없어졌어.\n물 한 병 사러 큰길까지 나가.\n\n자네가 그렇다고 하면 나 쓸라고. 아니라고 하면 안 쓸 거고.\"",
+    ch:[["좋은 골목이오. 사십 년 사셨으면 아시잖소.", "big", 2, 6, 0],
+        ["솔직히 여긴 끝났소. 어르신도 아시잖소.", "mid", 9, -8, 0, "elder"],
+        ["…재개발이 필요한 곳이긴 하오. 근데 나는 여기밖에 없소.", "small", 0, 0, 1]],
+    re:["\"자네 말이 맞네. (종이를 도로 접는다) 나도 안 쓰네.\"",
+        "\"…자네도 그렇게 생각했구나. (한참 종이를 본다)\n그럼 나 쓰겠네.\"",
+        "\"나도 여기밖에 없어. (웃는다) 우리 둘 다 갈 데가 없구먼.\""]},
+   {say:"\"내 정신 좀 봐. 이제 가봐야겠네.\n\n자네, 말은 자네 생각보다 빨리 돌아.\n이만 가봅세.\"",
+    ch:[],
+    re:[]}
   ]},
 
-{ spot:2, name:"마지막 세입자", ini:"세", sub:"1층에서 이십 년.<br>올봄에 나간 사람.",
-  see:"골목 끝에서 건물의 왼쪽 얼굴을 보세요.\n1층 유리 안에 커튼이 쳐져 있습니다.\n\n비어 있습니다. 올봄부터.",
-  recall:["사람들이 우리 집을 언덕집이라고 한다.\n언덕은 무슨. 이 길로 와보라고 하면 다들 말이 없다.\n이게 평지지.",
-"손님이 오면 꼭 이 길로 데려왔다.\n가파른 길은 삼 분이지만 그 길로 오면 우리 집이 언덕집이 된다.\n팔 분이 걸려도 이 길이다.",
-"전봇대에서 한 번 서긴 한다.\n그건 길 때문이 아니라 내 나이 때문이다."],
+{ spot:2, name:"마지막 세입자", ini:"세", sub:"1층에서 삼십 년.<br>첫 세입자이자 마지막 세입자. 올봄에 나간 사람",
+  see:"골목 끝에서 건물의 왼쪽 얼굴을 보세요.\n1층 유리 안에 커튼이 쳐져 있습니다.\n\n커튼은 누가 친 걸까요.",
+  recall:["사람들이 우리 집을 언덕집이라고 한다.\n언덕은 무슨. 이게 평지지.",
+"손님이 오면 꼭 이 길로 데려왔다.\n가파른 길로 오면 무릎만 아프지 않나. 고작 5분 차이다.\n8분이 걸려도 나는 이 길로만 다닌다.",
+"중간에 한 번 서긴 한다.\n그건 길 때문이 아니라 내 나이 때문이다."],
   beats:[
-   {say:'"사장님, 오늘도 그 길로 오시네요.\n\n손님들 꼭 이 길로 데려오셨잖아요. 팔 분 걸려서요.\n그러고는 그러셨죠. 봐요, 평지죠?\n\n손님들 다 숨차서 대답을 못 했어요, 사장님."',
-    ch:[["대답 못 한 게 아니라 인정한 거지. 평지 맞으니까.","big",0,2,0],
-        ["숨차긴. 요즘 사람들이 안 걸어서 그래.","mid",0,0,0],
-        ["…팔 분 걸리는 건 자네도 알고 있었구먼.","small",0,-2,1]],
-    re:['"네. 고개는 다들 끄덕였어요."',
-        '"저는 매일 걸었는데요, 사장님."',
-        '"다 알았어요. 사장님만 계속 물어보셨죠, 평지죠 하고.\n…아, 저 전봇대 옆 의자 제가 내놓은 거예요.\n이십 년 동안 한 번도 안 앉으셨지만요."']},
-   {say:'"저 열쇠 돌려드리러 왔어요.\n\n사장님, 저 재작년에 5년 계약 하자고 했잖아요.\n세 번 여쭤봤고, 세 번 다 생각해보자고 하셨어요.\n저 2년 기다리다 나왔어요.\n\n…화내는 거 아니에요. 그냥 아셨으면 해서요."',
-    ch:[["재개발이 걸렸는데 무슨 수로 5년을 약속해.","big",2,2,0],
-        ["미안하네. 근데 자네도 알잖나, 이 건물 상태.","mid",0,-8,0],
-        ["…세 번을 물었는데 세 번을 안 했구먼. 나는 세는 줄도 몰랐고.","small",0,0,1]],
-    re:['"그 말씀을 그때 해주셨으면 저 1년 일찍 나왔을 거예요."',
-        '"건물이 문제가 아니었어요, 사장님. 대답이 문제였지."',
-        '"……저는 셌어요."']},
-   {say:'"창고에 있던 미싱이요. 저 그거 이십 년 썼어요. 한 번도 안 고장 났어요.\n\n…그거 우리 엄마가 쓰던 거죠?\n저 어릴 때 문 앞에 서 있던 아저씨도 기억나요.\n아무 말 없이 서 있다 가시던 분.\n\n그게 사장님이었죠."',
-    ch:[["내 건물인데 내가 못 서 있나.","big",0,2,0],
-        ["그 미싱 가져가지 그랬나. 쓸 사람도 없는데.","mid",0,-4,1],
-        ["…공장 접고 나니까, 그 소리가 그렇게 듣고 싶더라고.","small",0,-2,1]],
-    re:['"네. 사장님 건물이죠. (열쇠를 내려놓는다)"',
-        '"못 가져가요. 그거 사장님 거잖아요. 사장님이 안 파신 거."',
-        '"엄마한테 그렇게 말씀하시지 그러셨어요.\n엄마가 사장님 무서워했거든요."']},
-   {say:'"이거요. (열쇠를 내민다)\n\n하나만 물어볼게요.\n재개발 안 되면, 저 다시 들어올 수 있어요?\n\n대답 안 하셔도 돼요. 익숙해요.\n근데 오늘은 한 번만 해주세요."',
-    ch:[["들어와. 자리 비워둘 테니까.","big",-1,4,0],
-        ["그때 가서 보자고. 지금은 나도 몰라.","mid",0,-4,0],
-        ["…약속은 못 하겠고, 자네 번호는 지우지 않으마.","small",0,0,1]],
-    re:['"(열쇠를 도로 주머니에 넣는다) 그럼 이거, 조금만 더 갖고 있을게요."',
-        '"(열쇠를 손에 쥔 채로) 네. 알겠습니다, 사장님."',
-        '"그거면 됐어요. 그거면요."']},
-   {say:'"가세요, 늘 다니시던 길로.\n\n…사장님, 그거 평지 아니에요.\n아셔도 되고 모르셔도 되는데, 저는 오르막이라고 말할게요.\n\n사장님한테 그 말 한 사람이 하나는 있어야 될 것 같아서요."', ch:[], re:[]}
+   {say:"\"사장님, 오늘도 그 길로 오시네요.\n\n손님들 꼭 이 길로 데려오셨잖아요. 8분 걸려서요.\n그러고는 그러셨죠. \"봐요, 평지죠?\"\n\n손님들 다 숨차서 대답을 못 했어요, 사장님.\"",
+    ch:[["대답 못 한 게 아니라 인정한 거지. 평지 맞으니까.", "big", 1, 2, 0],
+        ["숨차긴. 요즘 사람들이 안 걸어서 그래.", "mid", -1, -2, 0],
+        ["…자네도 알고 있었구먼.", "small", 0, 0, 1]],
+    re:["\"네. 다들 고개는 끄덕여주셨죠.\"",
+        "\"저는 매일 걸었는데요, 사장님. 삼십 년을.\"",
+        "\"다 알았어요. 사장님만 계속 물어보셨죠.\n평지죠? 이 정도면 평지죠?\n\n…아, 저 전봇대 옆 의자 제가 내놓은 거예요.\n삼십 년 동안 한 번도 안 앉으셨지만요.\""]},
+   {say:"\"저 열쇠 돌려드리러 왔어요.\n\n사장님, 저 재작년에 5년 계약 하고 싶다고 했잖아요.\n세 번 여쭤봤고, 세 번 다 생각해보자고 하셨어요.\n\n…화내는 거 아니에요. 그냥 아셨으면 해서요.\"",
+    ch:[["재개발이 걸린 마당에 무슨 수로 5년을 약속해.\n자네가 이만한 자리를 어디서 구하나.", "big", 2, 2, 0],
+        ["자네도 알잖나, 이 건물 상태. 겉만 멀쩡하지.", "mid", -1, -8, 0],
+        ["…약속을 하면 지켜야 하는데, 내가 지킬 수 있는 게 없었네.", "small", 0, 0, 1]],
+    re:["\"그 말씀을 그때 해주셨으면 저 1년 일찍 나왔을 거예요.\"",
+        "\"저는 건물이 문제가 아니었어요, 사장님. 대답이 문제였지.\"",
+        "\"……. 그 말씀이 그렇게 어려우셨어요?\""]},
+   {say:"\"창고에 있던 그 미싱이요.\n오래된 것 치고 관리가 너무 잘 돼 있던데.\n\n왜 저를 주셨어요?\n다시 받으시려고 문 앞에 서 계셨던 건 아니죠?\"",
+    ch:[["내 건물인데 내가 못 서 있나.", "big", 1, 2, 0],
+        ["낡아빠진 거 하나 버린 거지. 뭔 의미를 부여하나.", "mid", -1, -4, 0],
+        ["…공장 접고 나니까, 그 소리가 그렇게 듣고 싶더라고.", "small", 0, 0, 1]],
+    re:["\"네. 사장님 건물이죠. (열쇠를 내려놓는다)\"",
+        "\"아… 네. 그런 거였구나.\"",
+        "\"……. 그럼 문 앞에 서 계실 게 아니라 들어오시지 그랬어요.\n커피 내드렸을 텐데.\""]},
+   {say:"\"하나만 물어볼게요. 재개발 안 되면 저 다시 들어올 수 있어요?\n\n대답 안 하셔도 돼요. 익숙해요.\n근데 오늘은 한 번만 해주세요.\"",
+    ch:[["이만한 건물이 없지. 들어와. 자리 비워둘 테니까.", "big", -1, 4, 0],
+        ["이런 다 죽은 동네를 왜 다시 들어와. 일단 보자고.", "mid", -1, -4, 0],
+        ["…약속은 못 하겠고, 자네 번호는 안 지웠네.", "small", 0, 0, 1]],
+    re:["\"(열쇠를 도로 주머니에 넣는다)\n그럼 이거 조금만 더 갖고 있을게요.\"",
+        "\"(열쇠를 손에 쥔 채로) 네. 알겠습니다, 사장님.\"",
+        "\"……. (웃는다) 그거면 됐어요, 사장님.\""]},
+   {say:"\"가세요, 늘 다니시던 길로.\n\n…사장님, 그거 평지 아니에요.\n아셔도 되고 모르셔도 되는데, 저는 오르막이라고 말할게요.\n\n사장님한테 그 말 한 사람이 하나는 있어야 될 것 같아서요.\"",
+    ch:[],
+    re:[]}
   ]},
 
-{ spot:3, name:"재개발 추진위원", ini:"추", sub:"김씨 다음 반장.<br>십 년째 대답을 기다리는 사람.",
-  see:"내려가면서 건물을 보세요. 발밑에 있습니다.\n\n지붕이 보입니다. 창문이 보입니다.\n땅에 파묻힌 1층은 보이지 않습니다.",
-  recall:["나는 여기 자주 온다.\n여기서 보면 우리 건물이 제일 낫다.\n지붕도 반듯하고 창문도 크고.",
-"저 아래 1층은 여기서 안 보인다.\n그래서 여기가 좋다."],
+{ spot:3, name:"재개발 추진위원", ini:"추", sub:"김씨 다음 반장.<br>김씨에게 계단 쓰는 법을 배운 사람",
+  see:"내려가면서 건물을 보세요.\n당신 발밑에 건물이 있습니다.\n\n지붕이 보입니다. 창문이 보입니다.\n1층은 보이지 않습니다.",
+  recall:["나는 여기 자주 온다. 여기서 보면 우리 건물이 제일 멋있다.\n지붕도 반듯하고 창도 크고. 1층이 안 보이거든.",
+"아내도 이 길을 좋아했다.\n밤에 혼자 올라와서 지어지는 집을 보다 갔다고 했다.\n\n나는 그때 아내가 완성될 집을 보는 줄 알았다.",
+"이 계단, 내가 반장일 때 매일 쓸었다.\n언제 그만뒀는지는 기억이 안 난다."],
   beats:[
-   {say:'"사장님, 여기 계셨네요.\n여기 자주 오시죠. 밑에서 여러 번 봤어요.\n\n근데 사장님, 여기서는 사장님네 1층이 안 보여요."',
-    ch:[["1층이 왜. 여기서 보면 우리 건물이 제일 좋은 건물이야.","big",0,4,0],
-        ["안 보이면 어때. 위에 세 층이 멀쩡하잖아.","mid",0,0,0],
-        ["…그래서 여기 오는 거야.","small",0,-2,1]],
-    re:['"좋죠. 여기서 보면요."',
-        '"네. 위는 멀쩡하죠. 진짜로요."',
-        '"……. (같이 내려다본다)"']},
-   {say:'"사장님네 1층에서 반상회 했잖아요. 제일 넓다고.\n저 거기 스무 번은 앉았어요.\n\n그 방 넓은 거 아는 사람, 이 골목에 저밖에 없어요.\n근데 사장님, 그 방에 사람 모인 게 언제죠?"',
-    ch:[["자네가 반장 되고 안 모았잖아.","big",3,4,0],
-        ["요즘 누가 반상회를 해.","mid",0,0,0],
-        ["…내가 대답을 안 해서 못 모은 거지.","small",-2,0,1]],
-    re:['"제가 세 번 부탁드렸어요. 사장님이 세 번 다 생각해보자고 하셨고요."',
-        '"저희 어머니 계단에서 넘어지신 날 모으려고 했어요.\n사장님이 대답을 안 하셔서 못 했고요."',
-        '"……그 말 듣는 데 십 년 걸렸네요."']},
-   {say:'"저 사장님 미워서 이러는 거 아니에요.\n\n할머니는 사장님 보고 안 쓰신대요. 위 빌라도 눈치만 보고요.\n사장님이 싫다고 한 마디만 하셨으면 저희가 딴 방법 찾았어요.\n\n근데 사장님은 싫다고도 좋다고도 안 하셨어요. 십 년을요."',
-    ch:[["그럼 나 빼고 하지. 왜 나를 기다려.","big",2,2,0],
-        ["십 년 동안 뭐가 나빠졌나. 다들 잘 살았잖아.","mid",0,2,0],
-        ["…내가 십 년을 세워놨구먼. 미안하네.","small",-1,0,1]],
-    re:['"사장님 건물이 제일 커요. 빼면 그게 재개발이에요?"',
-        '"저희 어머니가 그 사이 두 번 넘어지셨어요.\n사장님이 반장 때 쓸던 그 계단에서요."',
-        '"……. (수첩을 덮는다)"']},
-   {say:'"여기서 보면 사장님네 멀쩡해요. 근데 내려가서 앞에 서면 다르잖아요.\n서명한 집들도 다 여기서 보면 멀쩡해요.\n\n사장님, 오늘은 대답 듣고 갈게요. 좋아요, 싫어요?"',
-    ch:[["내 1층 평수부터 감정평가에 제대로 넣어. 얘기는 그다음이야.","big",4,6,0],
-        ["이 경사에 뭘 지어. 공사비로 조합 깨질 거야.","mid",-4,-10,0],
-        ["…나는 위에서만 봤네. 삼십 년을.","small",-1,0,1]],
-    re:['"또 평수. …그 평수 제가 인정한다니까요.\n근데 그거 인정받으려고 삼십 년 쓰신 거예요?"',
-        '"……. 조합 깨지면 사장님 감정가도 같이 깨져요. 아시죠?"',
-        '"……오늘 처음으로 사장님이랑 얘기한 것 같네요."']},
-   {say:'"다음 총회 전까지예요. 그때는 진짜 마지막이고요.\n\n…저 사장님한테 반장 배웠어요. 계단 쓰는 것도요.\n그러니까 오늘 저 미워하지 마세요.\n\n아, 이따 저 가파른 길로 내려가 보세요.\n사장님 그 길로 안 다니시잖아요."', ch:[], re:[]}
+   {say:"\"사장님, 여기 계셨네요. 자주 오시죠. 밑에서 여러 번 봤어요.\n\n오늘도 두 집이나 동의서를 냈어요.\n사장님네도 새로 지으면 아주 번듯해질 텐데. 고민 좀 해보셨어요?\"",
+    ch:[["우리 건물이 뭐 어때서. 여기서 보면 제일 좋은 건물이야.", "big", 1, 4, 0],
+        ["뭘 새로 지어. 이 경사에 뭘 지어.", "mid", -2, -4, 0],
+        ["…그래서 여기 오는 거야. 여기서만 멀쩡해 보이거든.", "small", 0, 0, 1]],
+    re:["\"좋죠. 여기서 보면요.\"",
+        "\"그 말씀 조합에서 하시면 감정가부터 내려가요.\"",
+        "\"……. (같이 내려다본다)\""]},
+   {say:"\"사장님, 저 반장 사장님한테 배웠어요. 계단 쓰는 것도요.\n새벽에 빗자루 들고 나오셨잖아요.\n\n…저희 어머니가 그 계단에서 두 번 넘어지셨어요.\n재작년이랑 작년에요.\n\n언제부터 안 쓰셨어요?\"",
+    ch:[["내가 왜 남의 계단을 쓸어. 그거 구청 일이지.", "big", 2, 0, 0],
+        ["쓸어봐야 뭐 하나. 어차피 없어질 동네인데.", "mid", -2, -2, 0],
+        ["…언제부터 안 했는지가 기억이 안 나네.", "small", 0, 0, 1]],
+    re:["\"이십 년을 하셨잖아요.\"",
+        "\"어머니 다치신 게 그 동네예요.\"",
+        "\"……. 그게 제일 무섭죠.\""]},
+   {say:"\"사장님네 1층에서 반상회 했잖아요. 제일 넓다고.\n저 거기 스무 번은 갔어요.\n\n근데 사장님, 그 방에 사람 모인 게 언제죠?\"",
+    ch:[["아직도 모이지. 자네가 뭘 잘 모르나 보네.", "big", 3, 4, 0],
+        ["요즘 누가 반상회를 해. 이 동네에 뭐 볼 게 있다고.", "mid", -2, -2, 0],
+        ["…내가 대답을 안 해서 못 모은 거지.", "small", 0, 0, 1]],
+    re:["\"그래요? 사람 들어가는 걸 한 번도 못 봤는데요.\"",
+        "\"그건 그렇죠. 다들 나가고 스튜디오만 들어오고.\"",
+        "\"……그 말 듣는 데 십 년 걸렸네요.\""]},
+   {say:"\"여기서 보면 사장님네 멀쩡해요.\n근데 내려가서 앞에 서면 다르잖아요.\n서명한 집들도 다 여기서 보면 멀쩡했어요.\n\n사장님, 오늘은 대답 듣고 갈게요. 좋아요, 싫어요?\"",
+    ch:[["내 1층 평수부터 감정평가에 제대로 넣어. 얘기는 그다음이야.", "big", 4, 6, 0],
+        ["이 경사에 뭘 지어. 공사비로 조합 깨질 거야.", "mid", -4, -10, 0],
+        ["…싫네. 여기를 벗어나면 어디로 가야 할지를 모르겠어.", "small", 0, 0, 1]],
+    re:["\"또 평수. 그 평수 제가 인정한다니까요.\n근데 그거 인정받으려고 삼십 년 쓰신 거예요?\"",
+        "\"조합 깨지면 사장님 감정가도 같이 깨져요. 아시죠?\"",
+        "\"……오늘 처음으로 사장님이랑 얘기한 것 같네요.\""]},
+   {say:"\"다음 총회 전까지예요. 그때가 진짜 마지막이고요.\n\n…오늘 저 미워하지 마세요.\n\n아, 이따 저 가파른 길로 내려가 보세요.\n사장님 그 길로 안 다니시잖아요.\"",
+    ch:[],
+    re:[]}
   ]},
 
-{ spot:4, name:"목수 영감의 아들", ini:"목", sub:"골목에서 제일 야무졌던 집의,<br>남은 사람.",
-  see:"숨을 고르고 돌아서세요.\n\n여기서는 다 보입니다.\n위도, 아래도.",
-  recall:["나는 이 길로 안 다닌다. 가파르기도 하고.",
-"여기서 보면 다 보인다.\n위는 멀쩡하고, 아래는 저렇다.",
-"손님을 여기로 데려온 적이 한 번도 없다."],
+{ spot:4, name:"목수 영감의 아들", ini:"목", sub:"옆집.<br>자기 손으로 집을 지은 사람의 아들",
+  see:"숨을 고르고 돌아서세요.\n\n여기서는 다 보입니다. 위도, 아래도.",
+  recall:["나는 이 길로 안 다닌다. 가파르고 좁고 냄새난다.",
+"여기서 보면 다 보이는 게 싫다.\n길이 기운 것도, 내가 기운 것도.",
+"그래서 손님을 여기로 데려온 적이 한 번도 없다."],
   beats:[
-   {say:'"김씨 아저씨, 저 기억하세요? 목수 영감 아들이요.\n아버지 짐 정리하다, 터라도 보고 가려고요.\n\n저 어릴 때 아버지가 여기서 아저씨네를 한참 보시곤 했어요.\n…근데 늘 같은 말을 하셨어요.\n저 양반은 왜 나를 그렇게 어려워하나, 하고요.\n\n아저씨, 아버지는 아저씨가 자기를 싫어하는 줄 알고 돌아가셨어요."',
-    ch:[["그 영감이 나를 뭘 안다고.","big",1,-2,0],
-        ["싫어하긴. 그냥 서로 바빴던 거지.","mid",0,2,0],
-        ["…어려워한 게 아니라, 부끄러웠던 거야. 삼십 년을.","small",0,0,1]],
-    re:['"모르셨죠. 아저씨가 말을 안 하셨으니까요."',
-        '"바빴죠. 사십 년 옆집인데요."',
-        '"……부끄러워요? 아저씨가요?\n아버지는 아저씨 부지런한 거 부러워하셨는데요."']},
-   {say:'"아버지가 그러셨어요. 저 집 아랫단은 내가 해주고 싶었는데, 하고요.\n\n근데 하나는 몰래 해놓으셨대요. 금 간 데 한 군데.\n김씨는 모를 거라고 웃으시더라고요."',
-    ch:[["몰래는 무슨. 내 건물을 왜 남이 손대.","big",0,2,0],
-        ["그럼 다 해주시지 그랬나.","mid",0,-4,0],
-        ["…물이 안 새는 데가 딱 한 군데 있었어. 나는 안 물어봤고.\n물어보면 알게 되니까.","small",0,0,1]],
-    re:['"아버지가 그러셨어요. 김씨는 끝까지 그럴 거라고."',
-        '"해드리려고 했어요. 아저씨가 됐다고 하셨잖아요."',
-        '"……아셨구나. 아셨으면서 안 물어보신 거네요."']},
-   {say:'"저희 집 사진이 한 장도 없어요. 찾아봤는데 진짜 한 장도요.\n\n멀쩡한 집은 아무도 안 찍잖아요.\n찍힌 건 아저씨네뿐이에요. 2011년부터 쭉.\n\n웃기죠. 뭐가 남은 건지."',
-    ch:[["남는 건 서 있는 건물이야. 좋았어도 없잖나.","big",2,2,0],
-        ["찍혀서 뭐 하나. 놀림감으로 찍힌 건데.","mid",0,-2,0],
-        ["…내가 기억해. 그 담. 자로 잰 것 같았어.\n새벽마다 만져봤어, 내가.","small",0,0,1]],
-    re:['"……네. 서 있죠."',
-        '"놀림감이어도 남았잖아요. 저희는 그것도 없어요."',
-        '"……그 말, 아버지가 들었으면 좋았을 텐데요."']},
-   {say:'"이거 드릴게요. (대패)\n아버지 연장인데, 이것만 남았어요.\n\n받으실래요?"',
-    ch:[["됐네. 나는 쓸 줄도 모르고.","big",0,2,0],
-        ["…줘보게. 어디 두긴 둬야지.","mid",0,0,0],
-        ["…이걸 받으면, 내가 고쳐야 되는데.","small",0,-4,1]],
-    re:['"(도로 넣는다) 그럼 저 아래 어디 묻고 갈게요."',
-        '"(건넨다) 어디 두시든요."',
-        '"고치라고 드리는 거 아니에요.\n그냥 아버지가 아저씨 집을 오래 봤어서요."']},
-   {say:'"가보세요, 아저씨.\n\n…저 이제 이 골목 안 올 것 같아요.\n볼 게 없어서요."', ch:[], re:[]}
+   {say:"\"아저씨, 저 기억하세요? 옆집 목수 영감 아들이요.\n아버지 짐 정리하다 터라도 보고 가려고요.\n\n저 어릴 때 아버지가 여기서 아저씨네를 한참 보시곤 했어요.\n늘 같은 말을 하셨어요. 저 양반은 왜 나를 그렇게 어려워하나, 하고요.\n\n아저씨, 아버지는 아저씨가 자기를 싫어하는 줄 알고 돌아가셨어요.\"",
+    ch:[["그 영감이 날 뭘 안다고.", "big", 1, -2, 0],
+        ["싫어하긴. 그냥 서로 바빴던 거지.", "mid", 0, -2, 0],
+        ["…어려워한 게 아니라 부끄러웠던 거야.", "small", 0, 0, 1]],
+    re:["\"모르셨죠. 아저씨가 말을 안 하셨으니까요.\"",
+        "\"바빴죠. 사십 년 옆집인데요.\"",
+        "\"부끄러워요? 아저씨가요?\n아버지는 아저씨 부지런한 거 부러워하셨는데요.\n새벽마다 계단 쓰는 소리에 일어나셨대요.\""]},
+   {say:"\"아저씨, 아버지가 그러셨어요.\n김씨는 원래 손이 좋은 사람인데 왜 손을 안 쓰나, 하고요.\n\n저 그 말 무슨 뜻인지 몰랐거든요.\n아저씨 봉제 하셨다면서요.\"",
+    ch:[["손으로 벌어서 어느 세월에. 땅을 사야 남는 거야.", "big", 2, 4, 0],
+        ["손이 좋긴. 미싱이나 돌리던 손이지.", "mid", -2, -2, 0],
+        ["…열두 대를 팔았어. 한 대는 못 팔았고.", "small", 0, 0, 1]],
+    re:["\"그래서 남았어요?\"",
+        "\"…그 미싱 소리 저 어릴 때 다 들었어요. 좋았는데.\"",
+        "\"……왜 한 대는 안 파셨어요?\""]},
+   {say:"\"아버지가 그러셨어요. 저 집 아랫단은 내가 해주고 싶었는데, 하고요.\n\n근데 하나는 몰래 해놓으셨대요. 금 간 데 한 군데.\n김씨는 모를 거라고 웃으시더라고요.\"",
+    ch:[["몰래는 무슨. 내 건물을 왜 남이 손대.", "big", 1, 2, 0],
+        ["그럼 다 해주지 그랬나. 한 군데 해놓고.", "mid", -1, -4, 0],
+        ["…그게 자네 아버지가 해놓은 거였구먼.", "small", 0, 0, 1]],
+    re:["\"아버지가 그러셨어요. 김씨는 끝까지 그럴 거라고.\"",
+        "\"해드리려고 했어요. 아저씨가 됐다고 하셨잖아요.\"",
+        "\"아세요? 어딘지?\""]},
+   {say:"\"이거 드릴게요. 아버지 연장인데 이것만 남았어요.\n\n받으실래요?\"",
+    ch:[["됐네. 나는 쓸 줄도 모르고 고칠 데도 없어.", "big", 1, 2, 0],
+        ["이제 와서 연장은. 헐릴 건물에.", "mid", -1, -2, 0],
+        ["…이걸 받으면 내가 고쳐야 되는데.", "small", 0, 0, 1]],
+    re:["\"(도로 넣는다) 그럼 제가 챙겨갈게요.\"",
+        "\"……네. 그러네요.\"",
+        "\"고치라고 드리는 거 아니에요.\n그냥 아버지가 아저씨 집을 오래 보셔서요.\""]},
+   {say:"\"건강하세요, 아저씨.\n\n…저 이제 이 골목에 올 일은 없을 것 같네요.\"",
+    ch:[],
+    re:[]}
   ]},
 
-{ spot:5, name:"아들", ini:"아", sub:"동의서를 삼 주째<br>들고 다니는 사람.",
-  see:"건물 밑입니다.\n잠깐 조용히 서 보세요.\n\n위에서 소리가 내려옵니다.\n누군가 살고 있는 소리.",
-  recall:["여기 서면 위층 소리가 다 내려온다.\n옛날엔 재봉틀 소리가 내려왔다.\n1층은 조용하다.",
-"저 축대 아래 연필 금이 있다. 애 키를 쟀다.\n페인트를 갈 때마다 거기만 피해서 칠했다.\n초록일 때도, 빨강일 때도."],
+{ spot:5, name:"아들", ini:"아", sub:"김씨의 아들.<br>삼십 년을 기다린 사람",
+  see:"건물 밑입니다. 잠깐 조용히 서 보세요.\n\n위에서 소리가 내려옵니다.\n누군가 살고 있는 소리.",
+  recall:["여기 서면 위층 소리가 다 내려온다.\n옛날엔 재봉틀 소리가 내려왔다.",
+"저 축대 아래 연필 금이 있다. 애 키를 쟀다.\n페인트를 갈 때마다 거기만 피해서 칠했다.\n초록일 때도, 빨강일 때도.\n\n지난여름에 인부가 다시 칠하지만 않았어도."],
   beats:[
-   {say:'"아버지. 여기 계실 줄 알았어요.\n오늘 골목 한 바퀴 도셨다면서요.\n\n…가방에 동의서 있어요. 삼 주 됐어요.\n아버지 이름 칸만 비어 있고요."',
-    ch:[["도로 넣어라. 이 집은 안 팔아.","big",2,0,0],
-        ["누가 시켰냐. 네 처냐.","mid",0,0,0],
-        ["…삼 주를 들고 다녔구나.","small",0,0,1]],
-    re:['"저 오늘 그 말 들으러 온 거 아니에요."',
-        '"아무도 안 시켰어요. 제가 삼 주째 못 꺼내고 있는 거예요."',
-        '"네. 매일 아침에 넣고, 저녁에 꺼내서 봤어요."']},
-   {say:'"저 등기부 떼봤어요. 십 년쯤 전에요.\n진짜 제일 넓더라고요. 아버지 말 맞았어요.\n\n…근데 아버지가 이겼는데, 아무도 그걸 모르더라고요."',
-    ch:[["관심이 없어? 등기부에 적혀 있는데?","big",0,2,0],
-        ["네가 말했으면 달랐을 거다.","mid",0,0,0],
-        ["…알아도 그만인 거였구나. 나만 몰랐고.","small",0,0,1]],
-    re:['"등기부를 누가 봐요, 아버지."',
-        '"말했어요, 친구들한테. 애들이 그래서 뭐, 그러던데요."',
-        '"……. (아버지를 본다)"']},
-   {say:'"저 중학교 때 아버지한테 맞은 날 기억나세요?\n\n그날 밤에 엄마가 제 방에 와서 그러셨어요.\n아버지가 너 때린 게 아니라 당신을 때린 거라고.\n\n저는 그 말을 서른 넘어서 알았어요."',
-    ch:[["네 엄마가 뭘 알아. 좁게 짓자던 사람이.","big",1,0,0],
-        ["…네 엄마 말이 맞다.","mid",0,0,1],
-        ["…그날 밤에 나는 옥상에 있었다.","small",0,0,1]],
-    re:['"엄마 그 말 하고 우셨어요. 아버지 들으라고 문 열어놓고요."',
-        '"……저 그 말 들으려고 삼 주를 들고 다녔나 봐요."',
-        '"알아요. 엄마가 그러시더라고요, 아버지 옥상에 계실 거라고."']},
-   {say:'"아버지. 애들이 이 집 뭐라고 부르는지 아세요?\n마감 후진 집이요. 저 어릴 때부터요.\n\n…하나만 물을게요.\n아버지가 삼십 년 지킨 게 이 집이에요, 아니면 제일 넓다는 그 말이에요?\n\n천천히 대답하세요. 저 이번엔 안 가고 기다릴게요.\n\n(축대에 손을 대보세요.)"',
-    ch:[["집이고 말이고가 어딨어. 이 집이 그 말이야. 나는 안 놔.","big",3,2,0],
-        ["…네 말이 맞다. 그만하자. 종이 이리 다오.","mid",0,0,0,"sign"],
-        ["…여기 네 키 재던 금이 있다. 나는 삼십 년, 이것만 피해서 칠했다.","small",0,0,1]],
-    re:['"…네. 알겠어요, 아버지. (동의서를 가방에 넣는다) 저녁에 전화할게요."',
-        '"(바로 꺼내지 않는다) …정말이에요, 아버지?"',
-        '"……. (쪼그려 앉는다. 한참을.)\n이거였구나. 초록만 안 칠해진 데가."']},
-   {say:'"아버지, 저 갈게요.\n\n…아버지, 아무도 안 보고 있었어요.\n골목 사람들 아버지 미워한 적 없어요. 그냥 각자 살았어요.\n\n아버지 혼자 삼십 년 서 계셨던 거예요."', ch:[], re:[]}
+   {say:"\"아버지. 여기 계실 줄 알았어요.\n오늘 골목 한 바퀴 도셨다면서요.\n\n…동의서 가져왔어요. 아버지 이름 칸만 비어 있고요.\"",
+    ch:[["도로 넣어라. 이 집은 절대 못 판다.", "big", 2, 0, 0],
+        ["팔든 말든. 어차피 값도 안 나가는 거.", "mid", -2, -4, 0],
+        ["…이제 결정할 때가 됐지.", "small", 0, 0, 1]],
+    re:["\"저 오늘 그 말 들으러 온 거 아니에요.\"",
+        "\"아버지 그렇게 말씀하시는 거 처음 들어요.\"",
+        "\"네. 아버지.\""]},
+   {say:"\"저 등기부 떼봤어요. 십 년쯤 전에요.\n진짜 제일 넓더라고요. 아버지 말 맞았어요.\n\n…근데 아버지가 이겼는데, 아무도 그걸 모르더라고요.\"",
+    ch:[["등기부에 적혀 있는데 관심이 없어?", "big", 1, 2, 0],
+        ["넓으면 뭐 하나. 이 꼴인데.", "mid", -2, -4, 0],
+        ["…알아도 그만인 거였구나. 나만 몰랐지.", "small", 0, 0, 1]],
+    re:["\"등기부를 누가 봐요, 아버지.\"",
+        "\"그 말 하시려고 삼십 년 우기셨어요?\"",
+        "\"……. (아버지를 본다)\""]},
+   {say:"\"저 중학교 때 아버지한테 맞은 날 기억나세요?\n\n그날 밤에 엄마가 제 방에 와서 그러셨어요.\n아버지가 너 때린 게 아니라 당신을 때린 거라고.\n\n저는 그 말을 서른 넘어서 알았어요.\"",
+    ch:[["네 엄마가 뭘 안다고.", "big", 1, 0, 0],
+        ["나도 맞고 컸다. 유난이다.", "mid", -1, -2, 0],
+        ["…그날 밤에 나는 옥상에 있었다.", "small", 0, 0, 1]],
+    re:["\"엄마 그 말 하고 우셨어요, 아버지.\"",
+        "\"그러니까 아버지가 그러시면 안 됐죠.\"",
+        "\"……알아요. 불 켜진 거 봤어요.\""]},
+   {say:"\"아버지, 하나만 물을게요.\n\n그 미싱, 왜 안 파셨어요?\n열두 대는 파셨잖아요. 한 대는 왜요.\n\n…천천히 대답하세요. 저 이번엔 안 가고 기다릴게요.\"",
+    ch:[["그거 하나 값이나 나가냐. 팔 것도 없어서 안 판 거지.", "big", 3, 2, 0],
+        ["버리기 귀찮아서 뒀지 뭐.", "mid", -2, -4, 0, "sign"],
+        ["…그거 팔면, 내가 아무것도 안 만든 사람이 되잖니.", "small", 0, 0, 1, "sign"]],
+    re:["\"…네. 알겠어요, 아버지. (동의서를 가방에 넣는다)\n저녁에 전화할게요.\"",
+        "\"삼십 년을요?\"",
+        "\"……아버지.\""]},
+   {say:"\"아버지, 저 갈게요.\n\n…아무도 아버지를 미워한 적 없어요.\n다들 그냥 각자 살았어요.\n\n아버지 혼자 삼십 년 시합을 하신 거예요.\n아무도 안 하는 시합을요.\"",
+    ch:[],
+    re:[]}
   ]}
 ];
 
+/* ===== 엔딩 ===== */
 var ENDINGS = {
- A1:{t:"평수만 남았다", b:"헐렸어요.\n\n김씨가 보상 협상 자리에서도 평수 얘길 했거든요. 등기부까지 떼어 왔더라고요.\n감정평가사가 그랬대요. 네, 확인했습니다. 그러고 넘어갔어요.\n\n결국 남들 받는 만큼 받았어요. 딱 남들만큼.\n아, 이사 가는 날 대패가 하나 나왔는데, 누구 건지 몰라서 버렸다더라고요.",
+ A1:{t:"평수만 남았다", b:"결국 재개발로 헐렸어요.\n\n김씨가 보상 협상 자리에서도 평수 얘길 했거든요. 등기부까지 떼어 왔더라고요.\n감정평가사가 그랬대요. 네, 확인했습니다. 그러고 넘어갔어요.\n\n결국 남들 받는 만큼 받았어요. 딱 남들만큼.\n\n아, 이사 가는 날 대패가 하나 나왔는데 누구 건지 몰라서 버렸다더라고요.\n미싱도요.",
     g:"얻은 것: 남들만큼의 보상금", l:"잃은 것: 삼십 년 우긴 것이 아무것도 아니게 된 것"},
- A2:{t:"이사", b:"헐렸어요. 김씨는 보상 잘 받고 아드님네 근처로 갔어요.\n새 아파트요. 마감도 반듯하고.\n\n근데 요즘 김씨는 평수 얘길 안 해요. 삼십 년을 그 소리만 하던 사람이요.\n\n가끔 이 골목에 와서 빈 자리를 한참 보다 가요.\n저번엔 그러더라고요. 저기가 우리 집 옥상 있던 데다, 하고.\n옥상 얘기를 하데요. 평수가 아니라.",
+ A2:{t:"이사", b:"결국 재개발로 헐렸어요.\n\n김씨는 보상 잘 받고 아드님네 근처로 갔어요. 새 아파트요. 마감도 반듯하고.\n\n근데 요즘 김씨는 평수 얘길 안 해요. 삼십 년을 그 소리만 하던 사람이요.\n\n베란다에 미싱을 뒀대요.\n아파트에 미싱을 왜 두냐니까, 소리가 나야 잠이 온다고 그러더래요.",
     g:"얻은 것: 돈, 그리고 그 말을 그만둔 것", l:"잃은 것: 그 집"},
- B1:{t:"건물은 남고 김씨만 나갔다", b:"재개발은 무산됐어요. 김씨가 이긴 거죠.\n\n근데 그 건물, 이제 김씨 것이 아니에요.\n김씨가 하고 다닌 말 있잖아요. 물 새고 축대 무너진다던.\n조합도 그 말 듣고 접었고, 은행도 그 말 듣고 접었어요. 같은 말이었거든요.\n\n김씨는 이겼는데 나갔고, 건물은 졌는데 남았어요.\n나가는 날까지 그랬대요. 저거 내가 지킨 거라고.",
+ B1:{t:"건물은 남고 김씨만 나갔다", b:"재개발은 무산됐어요. 김씨가 이긴 거죠.\n\n근데 그 건물, 이제 김씨 것이 아니에요.\n김씨가 하고 다닌 말 있잖아요. 이 동네가 개발 가치가 없다는.\n조합도 그 말 듣고 접었고 은행도 그 말 듣고 접었어요. 같은 말이었거든요.\n\n김씨요? 글쎄요. 어디서 다시 봉제 일을 한다고 들은 것 같은데요.\n일흔여덟에요.",
     g:"얻은 것: 이겼다는 사실", l:"잃은 것: 건물"},
- B2:{t:"열쇠", b:"경매로 넘어갔어요. 최악이죠.\n\n근데 웃긴 게, 1층에 그 수선집이 다시 들어왔어요.\n새 주인한테 세 얻어서요. 열쇠를 안 버렸더라고요.\n\n김씨가 가끔 거기 앉아 있어요. 미싱 소리 들으면서요.\n이제 자기 건물도 아닌데. 커피를 내준대요. 아저씨 앉으세요, 하고.\n\n건물은 없고 사람은 남았어요.\n그게 남은 건지는, 나도 모르겠고요.",
+ B2:{t:"열쇠", b:"결국 건물이 경매로 넘어갔어요. 최악이죠.\n\n근데 웃긴 게, 1층에 그 수선집이 다시 들어왔어요.\n새 주인한테 세 얻어서요. 열쇠를 안 버렸더라고요.\n\n김씨요? 가끔 거기 앉아 있어요. 미싱 소리 들으면서요.\n이제 자기 건물도 아닌데. 커피를 내준대요. 아저씨 앉으세요, 하면서요.\n\n삼십 년을 문 앞에 서 계시던 양반이, 이제 안에 앉아 있어요.\n건물은 없고 사람은 남았어요. 그게 남은 건지는 나도 모르겠고요.",
     g:"얻은 것: 사람", l:"잃은 것: 전부"},
- C1:{t:"마감 후진 집", b:"지켰어요. 열기도 식었고 감정가도 버텼고. 김씨가 이긴 거예요.\n\n근데 뭐가 바뀌었냐고 물으면요, 아무것도요.\n\n손님들 아직도 물어봐요. 저 집은 왜 저래요, 하고.\n내 장부에도 그대로 적혀 있고요.\n김씨는 아직도 제일 넓다고 해요. 아무도 안 듣는데요.\n\n1층은 비어 있어요. 아드님은 요즘 잘 안 와요.",
+ C1:{t:"마감 후진 집", b:"결국 건물을 지켰어요. 열기도 식었고 감정가도 버텼고. 김씨가 이긴 거예요.\n\n근데 뭐가 바뀌었냐고 물으면요, 아무것도요.\n\n손님들 아직도 물어봐요. 저 집은 왜 저래요, 하고.\n내 장부에도 그대로 적혀 있고요.\n김씨는 아직도 제일 넓다고 해요. 아무도 안 듣는데요.\n\n1층은 비어 있어요. 미싱도 그대로 있고요.\n아드님은 안 본 지 좀 된 것 같던데.",
     g:"얻은 것: 건물, 그리고 이름 없는 면적", l:"잃은 것: 삼십 년 더"},
- C2:{t:"김씨네", b:"지켰어요.\n\n근데 그것보다요, 요즘 그 집을 마감 후진 집이라고 부르는 사람이 없어요.\n그냥 김씨네예요. 내 장부도 고쳤어요.\n\n김씨가 이제 평수 얘길 안 해요.\n대신 수선집 얘기, 아드님 얘기, 옆집 담벼락이 얼마나 야무졌는지 그 얘길 해요.\n요전엔 그러더라고요. 그 길 오르막이더라고, 하고요. 삼십 년 만에요.\n\n1층은 다시 초록으로 칠했어요.\n창틀엔 대패가 하나 놓여 있는데 안 쓰더라고요. 그냥 놔뒀대요.\n\n마감이요? 아직 저래요. 아직 누더기예요.\n근데 아무도 그걸 안 봐요.",
+ C2:{t:"김씨네", b:"결국 건물을 지켰어요.\n\n근데 그것보다요, 요즘 그 집을 마감 후진 집이라고 부르는 사람이 없어요.\n그냥 김씨네예요. 내 장부도 고쳤어요.\n\n김씨가 이제 평수 얘길 안 해요.\n대신 수선집 얘기, 아드님 얘기, 옆집 담벼락이 얼마나 야무졌는지 그 얘길 해요.\n요전엔 그러더라고요. 그 길 오르막이더라고, 하고요. 삼십 년 만에요.\n\n1층은 다시 초록으로 칠했어요. 사모님이 고르셨던 그 색으로요.\n창틀엔 대패가 하나 놓여 있는데 안 써요. 그냥 놔뒀대요.\n\n마감이요? 아직 저래요. 아직 누더기예요.\n근데 아무도 그걸 안 봐요.",
     g:"얻은 것: 이름", l:"잃은 것: 우길 거리. 그게 잃은 건지는 김씨도 이제 모른다"}
 };
 
@@ -439,7 +555,7 @@ function wake(){ if('wakeLock' in navigator){ navigator.wakeLock.request('screen
 /* ===== 화면 ===== */
 function html(s, night){
   document.body.classList.toggle('night', !!night);
-  var bg = night ? '#26241F' : '#F4F1E8';
+  var bg = night ? '#211E19' : '#F0EADB';
   document.documentElement.style.backgroundColor = bg;
   document.body.style.backgroundColor = bg;
   var appEl = document.getElementById('app');
@@ -469,8 +585,8 @@ function scrTitle(){
   var h='<div class="titleWrap">';
   h+='<p class="tAddr">회나무로13나길 31</p>';
   h+='<h1 class="tMain">이태원 맨션</h1>';
-  h+='<div class="tRule"></div>';
-  h+='<p class="tSub">서울 용산구, 어느 부동산 중개인의 말에서<br>걸으면서 하는 이야기 · 약 15분</p>';
+  h+='<div class="tPat"><pre class="tAsc">   +- - - - - - - - - - - - -+\n   |   o     o     o     o   |\n   +- - - - - - - - - - - - -+\n   |   o     o     o     o   |\n   +- - - - - - - - - - - - -+\n   |   o     o     o     o   |\n   +- - - - - - - - - - - - -+\n   |    +---+   .........    |\n ..|    |:::|   :.......:    |..\n:::+----+---+---------------+::::\n:::::::::::::::::::::::::::::::::</pre><div class="tThread"></div></div>';
+  h+='<p class="tSub">못생긴 건물에는 이유가 있다.<br>걸으면서 하는 이야기 · 약 15분</p>';
   h+='<div class="tBtns">';
   h+='<button class="btn" id="go">걷기 시작</button>';
   h+=(load()? '<button class="btn ghost sm" id="cont">이어서 하기</button>':'');
@@ -510,7 +626,7 @@ function scrChapter(){
   var s=S[G.si];
   var h='<div class="chapCard">';
   h+='<p class="chapNum">'+ORD[G.si]+' 번째 만남</p>';
-  h+='<div class="chapPort"><img src="img/ch_'+G.si+'.jpg" onerror="this.style.display=\'none\';this.parentNode.textContent=\''+s.ini+'\'">'+'</div>';
+  h+='<div class="chapPort"><pre class="chapObj">'+OBJ[G.si]+'</pre></div>';
   h+='<p class="chapName">'+s.name+'</p>';
   h+='<p class="chapSub">'+(s.sub||'')+'</p>';
   h+='</div>';
@@ -596,7 +712,7 @@ function scrSettle(){
   else if(G.dV<-2){ main='돈이 안 된다는 소문이 돌았다.'; sub='은행 쪽에서 전화가 한 번 왔다 끊겼다.'; }
   else { main='그 말이 골목을 돌았다.'; sub='조합이 오늘도 골목을 돌았다.'; }
   var h='<p class="settleMain serif">'+main+'</p>';
-  h+='<p class="settleNum">재개발 열기 '+(G.dR>=0?'+':'')+G.dR+' · 감정가 '+(G.dV>=0?'+':'')+(G.dV/10).toFixed(1)+'억<br><span style="opacity:.7">'+sub+'</span>'+(G.elderJust?'<br><br><b style="color:#F4F1E8">노인이 종이에 이름을 썼다.<br>험담은 건물만 깎는 게 아니었다.</b>':'')+'</p>';
+  h+='<p class="settleNum">재개발 열기 '+(G.dR>=0?'+':'')+G.dR+' · 감정가 '+(G.dV>=0?'+':'')+(G.dV/10).toFixed(1)+'억<br><span style="opacity:.7">'+sub+'</span>'+(G.elderJust?'<br><br><b style="color:#F0EADB">노인이 종이에 이름을 썼다.<br>험담은 건물만 깎는 게 아니었다.</b>':'')+'</p>';
   h+='<p class="tapHint" style="margin-top:60px">화면을 누르면 계속됩니다</p>';
   html(h, true);
   tapNext(function(){
