@@ -200,7 +200,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v0.9.1";
+var VERSION = "v0.9.2";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -503,6 +503,7 @@ var ENDINGS = {
 var G=null;
 var GHOST = location.search.indexOf('ghost=1')>-1;
 var SURVEY = location.search.indexOf('survey=1')>-1;
+var DEBUG  = location.search.indexOf('debug=1')>-1;
 var pos=null, watchId=null, walkStart=0, midShown=false;
 var scr = document.getElementById('scr');
 
@@ -540,6 +541,7 @@ function startGPS(){
   if(!navigator.geolocation || watchId!==null) return;
   watchId = navigator.geolocation.watchPosition(function(p){
     pos = {lat:p.coords.latitude, lng:p.coords.longitude, acc:p.coords.accuracy, t:p.timestamp};
+    pushFix(pos);
     if(G && G.phase==='walk') tickWalk();
     /* 측정 중에는 화면을 다시 그리지 않는다. 그리면 버튼이 날아간다 */
     if(SURVEY && !window.__measuring) drawSurvey();
@@ -561,11 +563,39 @@ function pokeGPS(){
     if(window.__measuring) pushSample();
   }, function(){}, {enableHighAccuracy:true, maximumAge:0, timeout:8000});
 }
+/* ===== 위치 평활화 =====
+   순간 좌표는 많이 튄다. 최근 12초치를 정확도로 가중평균해서 쓴다 */
+var FIX=[];
+function pushFix(p){
+  if(!p) return;
+  FIX.push({lat:p.lat, lng:p.lng, acc:p.acc, t:Date.now()});
+  var cut=Date.now()-12000;
+  while(FIX.length && (FIX[0].t<cut || FIX.length>14)) FIX.shift();
+}
+function smoothPos(){
+  if(!FIX.length) return pos;
+  var ws=0, la=0, ln=0, best=999;
+  for(var i=0;i<FIX.length;i++){
+    var f=FIX[i], age=(Date.now()-f.t)/1000;
+    var w = 1/(f.acc*f.acc) * Math.exp(-age/8);   /* 정확할수록, 최근일수록 무겁게 */
+    ws+=w; la+=f.lat*w; ln+=f.lng*w;
+    if(f.acc<best) best=f.acc;
+  }
+  return {lat:la/ws, lng:ln/ws, acc:Math.max(3, best/Math.sqrt(FIX.length)), n:FIX.length};
+}
 /* 시작 지점에서 잰 GPS 치우침을 나머지 지점에 똑같이 빼준다 */
 function calPos(){
-  if(!pos) return null;
-  if(!G || !G.cal) return pos;
-  return {lat:pos.lat-G.cal.dLat, lng:pos.lng-G.cal.dLng, acc:pos.acc};
+  var p = smoothPos();
+  if(!p) return null;
+  if(!G || !G.cal) return p;
+  return {lat:p.lat-G.cal.dLat, lng:p.lng-G.cal.dLng, acc:p.acc, n:p.n};
+}
+/* 어느 지점이 제일 가까운가. 절대 오차가 커도 순위는 잘 맞는다 */
+function rankSpots(p){
+  var r=[];
+  for(var i=0;i<SPOTS.length;i++) r.push({i:i, d:dist(p,SPOTS[i])});
+  r.sort(function(a,b){return a.d-b.d;});
+  return r;
 }
 function dist(a,b){
   var R=6371000, t1=a.lat*Math.PI/180, t2=b.lat*Math.PI/180;
@@ -615,7 +645,7 @@ function scrTitle(){
   h+=(load()? '<button class="btn ghost sm" id="cont">이어서 하기</button>':'');
   h+='</div>';
   h+='<p class="tNote">실제로 사람이 사는 건물입니다.<br>거주자에게 말을 걸지 말고, 조용히 봐주세요.<br>이어폰을 권합니다. 차와 계단을 조심하세요.</p>';
-  h+='<p class="tVer">'+VERSION+(GHOST?' · 유령 모드':'')+(SURVEY?' · 좌표 수집':'')+'</p>';
+  h+='<p class="tVer">'+VERSION+(GHOST?' · 유령 모드':'')+(SURVEY?' · 좌표 수집':'')+(DEBUG?' · 진단':'')+'</p>';
   h+='</div>';
   html(h, true);
   document.getElementById('go').onclick=function(){ localStorage.removeItem('im_save'); G=newGame(); wake(); G.phase='perm'; save(); route(); };
@@ -938,6 +968,7 @@ function tickWalk(){
   }
   var cp = calPos();
   var d = cp ? dist(cp,sp) : null;
+  var rk = cp ? rankSpots(cp) : null;
   var de=document.getElementById('dist'), ae=document.getElementById('acc');
   if(!de) return;
   if(d!==null){
@@ -945,8 +976,24 @@ function tickWalk(){
                          : ('남은 거리 <b>'+(Math.round(d/10)*10)+'m</b>');
     ae.textContent = pos.acc>60 ? ('GPS 오차 약 '+Math.round(pos.acc)+'m — 위치가 부정확합니다. 폰에서 열어주세요')
                                 : ('GPS 오차 약 '+Math.round(pos.acc)+'m');
+    if(DEBUG){
+      var dh='<div class="toast" style="text-align:left;font-family:var(--f-mono);font-size:11px">'+
+        '<b>진단</b> 표본 '+FIX.length+' · 평활오차 '+Math.round(cp.acc)+'m · 보정 '+(G.cal?'있음':'없음')+'<br>';
+      for(var z=0;z<rk.length;z++)
+        dh+= (rk[z].i===w.to?'▶ ':'&nbsp;&nbsp; ')+rk[z].i+' '+SPOTS[rk[z].i].name+' : '+Math.round(rk[z].d)+'m (r'+SPOTS[rk[z].i].r+')<br>';
+      dh+='2등과 차이 '+Math.round(lead)+'m · 연속 '+(G.nearHit||0)+'/3</div>';
+      ae.insertAdjacentHTML('afterend', '<div id="dbg">'+dh+'</div>');
+      var old2=document.getElementById('dbg'); if(old2 && old2.nextElementSibling && old2.nextElementSibling.id==='dbg') old2.remove();
+    }
     drawMap();
+    /* (가) 반경 안에 확실히 들어옴 */
     if(d<=sp.r){ return arriveNow(); }
+    /* (나) 목표가 가장 가깝고, 2등과 충분히 벌어지고, 여유 반경 안 */
+    var lead = (rk[1] ? rk[1].d - rk[0].d : 99);
+    if(rk[0].i===w.to && d<=sp.r*2.5 && lead>=8 && FIX.length>=4){
+      G.nearHit=(G.nearHit||0)+1;
+      if(G.nearHit>=3){ G.nearHit=0; return arriveNow(); }
+    } else { G.nearHit=0; }
   } else {
     de.innerHTML='<b style="font-size:14px">위치를 찾는 중…</b>';
     ae.textContent = GHOST?'유령 모드':'하늘이 트인 곳에서 더 잘 잡힙니다';
@@ -969,6 +1016,7 @@ function showMid(txt){
   tapNext(function(){ if(G.remote){ arriveNow(); } else { scrWalk(); } });
 }
 function arriveNow(){
+  FIX=[]; if(G) G.nearHit=0;
   if(!G || G.phase!=='walk') return;
   G.phase='arrive'; save(); route();
 }
