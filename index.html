@@ -200,7 +200,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v0.7.0";
+var VERSION = "v0.7.1";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -879,17 +879,32 @@ function drawSurvey(){
   var st=JSON.parse(localStorage.getItem('im_survey')||'{}');
   var h='<h1 style="font-size:22px">좌표 수집</h1>';
   h+='<p class="small">'+VERSION+'</p>';
-  h+='<p class="mid">각 지점에 서서 버튼을 누르세요.<br>GPS 오차가 10m 아래일 때 누르면 좋습니다.</p>';
+  h+='<p class="mid">각 지점에 서서 <b>[재기]</b>를 누르세요. 20초 동안 자동으로 여러 번 재서 평균을 냅니다.<br>그 자리에 가만히 서 계세요. 결과가 나빠 보이면 한 번 더 누르면 됩니다. 더 좋은 값만 남습니다.</p>';
   h+='<p class="mid" id="now">'+(pos?('현재 '+pos.lat.toFixed(6)+', '+pos.lng.toFixed(6)+' · 오차 '+Math.round(pos.acc)+'m'):'위치를 찾는 중…')+'</p>';
   for(var i=0;i<SPOTS.length;i++){
     var s=st[i];
-    h+='<div class="srow"><button data-i="'+i+'">'+i+'. '+SPOTS[i].name+'</button>'+
-       '<span>'+(s?(s.lat.toFixed(6)+', '+s.lng.toFixed(6)+' ('+Math.round(s.acc)+'m)'):'미수집')+'</span></div>';
+    var lbl='미수집', qc='';
+    if(s){ qc = s.acc<=10?'좋음':(s.acc<=20?'보통':'나쁨');
+      lbl = s.lat.toFixed(6)+', '+s.lng.toFixed(6)+'<br>오차 '+Math.round(s.acc)+'m · '+(s.n||1)+'회 평균 · '+qc; }
+    h+='<div class="srow"><button data-i="'+i+'">'+i+'. '+SPOTS[i].name+(s?' 다시':' 재기')+'</button>'+
+       '<span>'+lbl+'</span></div>';
   }
   var code='var SPOTS = [\n';
   for(var j=0;j<SPOTS.length;j++){ var q=st[j];
-    code+='  {id:'+j+', name:"'+SPOTS[j].name+'", lat:'+(q?q.lat.toFixed(6):SPOTS[j].lat)+', lng:'+(q?q.lng.toFixed(6):SPOTS[j].lng)+', r:'+SPOTS[j].r+'}'+(j<SPOTS.length-1?',':'')+'\n'; }
+    var rr = q ? Math.max(25, Math.round((q.acc+12)/5)*5) : SPOTS[j].r;
+    code+='  {id:'+j+', name:"'+SPOTS[j].name+'", lat:'+(q?q.lat.toFixed(6):SPOTS[j].lat)+', lng:'+(q?q.lng.toFixed(6):SPOTS[j].lng)+', r:'+rr+'}'+(j<SPOTS.length-1?',':'')+'\n'; }
   code+='];';
+  /* 지점끼리 너무 가까우면 경고 */
+  var warn=[];
+  for(var a=0;a<SPOTS.length;a++) for(var b2=a+1;b2<SPOTS.length;b2++){
+    if(!st[a]||!st[b2]) continue;
+    var R=6371000, p1=st[a].lat*Math.PI/180, p2=st[b2].lat*Math.PI/180;
+    var dp=(st[b2].lat-st[a].lat)*Math.PI/180, dl=(st[b2].lng-st[a].lng)*Math.PI/180;
+    var A=Math.sin(dp/2)*Math.sin(dp/2)+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)*Math.sin(dl/2);
+    var d=R*2*Math.atan2(Math.sqrt(A),Math.sqrt(1-A));
+    if(d < 70) warn.push(a+'번과 '+b2+'번이 '+Math.round(d)+'m');
+  }
+  if(warn.length) h+='<div class="toast"><b>지점이 너무 가깝습니다</b><br>'+warn.join('<br>')+'<br>70m 이상 떨어져야 안 겹칩니다.</div>';
   h+='<textarea id="code" readonly>'+code+'</textarea>';
   h+='<button class="btn sm" id="cp">코드 복사</button>';
   h+='<button class="btn ghost sm" id="apply">이 좌표로 바로 플레이</button>';
@@ -899,10 +914,36 @@ function drawSurvey(){
   html(h);
   var bs=scr.querySelectorAll('.srow button');
   for(var k=0;k<bs.length;k++) bs[k].onclick=function(){
-    if(!pos){ alert('아직 위치를 못 잡았습니다'); return; }
-    var st2=JSON.parse(localStorage.getItem('im_survey')||'{}');
-    st2[this.getAttribute('data-i')]={lat:pos.lat,lng:pos.lng,acc:pos.acc};
-    localStorage.setItem('im_survey',JSON.stringify(st2)); drawSurvey();
+    if(!pos){ alert('아직 위치를 못 잡았습니다. 하늘이 트인 곳에서 잠시 기다려 주세요.'); return; }
+    if(window.__measuring) return;
+    var idx=this.getAttribute('data-i'), btn=this, secs=20, samples=[], last=null;
+    window.__measuring=true;
+    var nowEl=document.getElementById('now');
+    var t=setInterval(function(){
+      if(pos && pos.acc<=60 && (!last || last!==pos.lat+','+pos.lng+','+pos.acc)){
+        last=pos.lat+','+pos.lng+','+pos.acc;
+        samples.push({lat:pos.lat,lng:pos.lng,acc:pos.acc});
+      }
+      secs--;
+      btn.textContent='재는 중 '+secs+'초 ('+samples.length+')';
+      if(nowEl) nowEl.textContent='그 자리에 가만히 서 계세요 · 현재 오차 '+(pos?Math.round(pos.acc):'?')+'m';
+      if(secs>0) return;
+      clearInterval(t); window.__measuring=false;
+      if(!samples.length){ alert('신호를 못 잡았습니다. 하늘이 트인 쪽으로 몇 걸음 옮겨서 다시 해보세요.'); drawSurvey(); return; }
+      /* 정확도 좋은 순 상위 60%만 채택 후, 1/오차^2 가중 평균 */
+      samples.sort(function(a,b){return a.acc-b.acc;});
+      var use=samples.slice(0, Math.max(1, Math.ceil(samples.length*0.6)));
+      var ws=0, la=0, ln=0;
+      for(var q=0;q<use.length;q++){ var w=1/(use[q].acc*use[q].acc); ws+=w; la+=use[q].lat*w; ln+=use[q].lng*w; }
+      /* 평균의 유효 오차: 최소 오차를 표본수로 나눈 근사 */
+      var eff=Math.max(3, use[0].acc/Math.sqrt(use.length));
+      var res={lat:la/ws, lng:ln/ws, acc:eff, n:use.length};
+      var st2=JSON.parse(localStorage.getItem('im_survey')||'{}');
+      var prev=st2[idx];
+      if(!prev || res.acc<prev.acc){ st2[idx]=res; localStorage.setItem('im_survey',JSON.stringify(st2)); }
+      else { alert('이전 측정('+Math.round(prev.acc)+'m)이 더 좋아서 그대로 둡니다.'); }
+      drawSurvey();
+    },1000);
   };
   document.getElementById('cp').onclick=function(){
     var t=document.getElementById('code'); t.select(); t.setSelectionRange(0,99999);
@@ -912,7 +953,8 @@ function drawSurvey(){
   };
   document.getElementById('apply').onclick=function(){
     var st3=JSON.parse(localStorage.getItem('im_survey')||'{}');
-    for(var m=0;m<SPOTS.length;m++){ if(st3[m]){ SPOTS[m].lat=st3[m].lat; SPOTS[m].lng=st3[m].lng; } }
+    for(var m=0;m<SPOTS.length;m++){ if(st3[m]){ SPOTS[m].lat=st3[m].lat; SPOTS[m].lng=st3[m].lng;
+      SPOTS[m].r=Math.max(25, Math.round((st3[m].acc+12)/5)*5); } }
     localStorage.setItem('im_spots', JSON.stringify(SPOTS));
     location.href = location.pathname;
   };
