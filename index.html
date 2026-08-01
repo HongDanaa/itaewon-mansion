@@ -211,7 +211,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.0.2";
+var VERSION = "v1.1.0";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -638,6 +638,32 @@ function html(s, night){
 
 var LOCK=0;
 function locked(){ var t=Date.now(); if(t-LOCK<450) return true; LOCK=t; return false; }
+/* ===== 소리 =====
+   audio/v01.mp3 ~ v08.mp3  인트로 나레이션
+   파일이 없어도 게임은 그대로 진행된다 */
+var VOICE=null, VOICEdone=false, VOICEfail=false;
+function stopVoice(){
+  if(VOICE){ try{ VOICE.pause(); VOICE.src=''; }catch(e){} VOICE=null; }
+}
+function playVoice(name, onend){
+  stopVoice(); VOICEdone=false; VOICEfail=false;
+  var a=new Audio('audio/'+name+'.mp3');
+  a.preload='auto';
+  a.onended=function(){ VOICEdone=true; if(onend) onend(); };
+  a.onerror=function(){ VOICEfail=true; VOICEdone=true; if(onend) onend(); };
+  /* 8초 안에 재생이 못 시작되면 없는 것으로 본다 */
+  setTimeout(function(){ if(!VOICEdone && a.paused){ VOICEfail=true; VOICEdone=true; if(onend) onend(); } }, 8000);
+  VOICE=a;
+  var p=a.play();
+  if(p && p.catch) p.catch(function(){ VOICEfail=true; VOICEdone=true; if(onend) onend(); });
+  return a;
+}
+/* 다음 컷 미리 받아두기 */
+function warmVoice(name){
+  try{ var a=new Audio('audio/'+name+'.mp3'); a.preload='auto'; a.load(); }catch(e){}
+}
+function vid(n){ return 'v'+(n<10?'0':'')+n; }
+
 function tapNext(fn){
   var born=Date.now();
   scr.onclick=function(){
@@ -810,9 +836,36 @@ function confirmStart(auto){
 }
 
 function scrIntro(){
-  if(G.ic>=INTRO.length){ G.phase='chapter'; G.si=0; G.bi=0; G.ri=0; save(); return route(); }
-  html('<p class="recall serif">'+INTRO[G.ic]+'</p><p class="tapHint">화면을 누르면 계속됩니다</p>', true);
-  tapNext(function(){ G.ic++; save(); route(); });
+  if(G.ic>=INTRO.length){ stopVoice(); G.phase='chapter'; G.si=0; G.bi=0; G.ri=0; save(); return route(); }
+  html('<p class="recall serif">'+INTRO[G.ic]+'</p>'+
+       '<p class="tapHint" id="ihint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>', true);
+
+  var n=G.ic+1, armed=false, tapped=0;
+  function reveal(){
+    armed=true;
+    var e=document.getElementById('ihint');
+    if(e){ e.textContent = VOICEfail ? '화면을 누르면 계속됩니다' : '화면을 누르면 계속됩니다'; e.style.opacity='1'; }
+  }
+  playVoice(vid(n), reveal);
+  if(n < INTRO.length) warmVoice(vid(n+1));
+  /* 소리가 없거나 아주 짧아도 최소 이 시간은 머문다 */
+  setTimeout(function(){ if(VOICEfail) reveal(); }, 2600);
+
+  var born=Date.now();
+  scr.onclick=function(){
+    if(Date.now()-born<450) return;
+    if(locked()) return;
+    if(!armed){
+      /* 아직 듣는 중. 한 번 더 누르면 건너뛴다 */
+      tapped++;
+      if(tapped===1){
+        var e=document.getElementById('ihint');
+        if(e){ e.textContent='한 번 더 누르면 넘어갑니다'; e.style.opacity='.55'; }
+        return;
+      }
+    }
+    scr.onclick=null; stopVoice(); G.ic++; save(); route();
+  };
 }
 
 function route(){
