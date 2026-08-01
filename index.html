@@ -200,16 +200,16 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v0.7.2";
+var VERSION = "v0.8.1";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
-  {id:0, name:"파프리 공인중개사", lat:37.53480, lng:126.99430, r:30},
-  {id:1, name:"정면 자리",       lat:37.53470, lng:126.99330, r:30},
-  {id:2, name:"왼쪽 골목",       lat:37.53455, lng:126.99230, r:30},
-  {id:3, name:"뒷길",           lat:37.53560, lng:126.99360, r:30},
-  {id:4, name:"가파른 오르막",    lat:37.53390, lng:126.99390, r:30},
-  {id:5, name:"주차장",         lat:37.53500, lng:126.99320, r:25}
+  {id:0, name:"시작지점",      lat:37.541389, lng:126.992000, r:10},
+  {id:1, name:"정면 자리",     lat:37.541430, lng:126.991522, r:10},
+  {id:2, name:"왼쪽 골목",     lat:37.541361, lng:126.991278, r:10},
+  {id:3, name:"뒷길",         lat:37.541528, lng:126.991778, r:10},
+  {id:4, name:"가파른 오르막", lat:37.541181, lng:126.991737, r:10},
+  {id:5, name:"주차장",       lat:37.541361, lng:126.991722, r:10}
 ];
 var SAVED = localStorage.getItem('im_spots');
 if(SAVED){ try{ SPOTS = JSON.parse(SAVED); }catch(e){} }
@@ -612,8 +612,69 @@ function scrTitle(){
   h+='<p class="tVer">'+VERSION+(GHOST?' · 유령 모드':'')+(SURVEY?' · 좌표 수집':'')+'</p>';
   h+='</div>';
   html(h, true);
-  document.getElementById('go').onclick=function(){ localStorage.removeItem('im_save'); G=newGame(); startGPS(); wake(); G.phase='intro'; G.ic=0; save(); route(); };
+  document.getElementById('go').onclick=function(){ localStorage.removeItem('im_save'); G=newGame(); wake(); G.phase='perm'; save(); route(); };
   var c=document.getElementById('cont'); if(c) c.onclick=function(){ G=load(); startGPS(); wake(); route(); };
+}
+
+/* ===== 위치 사용 확인 ===== */
+var PERMtimer=null;
+function scrPerm(){
+  document.getElementById('band').classList.add('hidden');
+  var h='<div class="wrap" style="padding-top:9vh">';
+  h+='<h1 style="font-size:26px;margin-bottom:18px">위치를 써도 될까요</h1>';
+  h+='<p class="guide">이 이야기는 실제 골목을 걸으면서 진행됩니다.<br>'+
+     '지금 어디쯤 계신지 알아야 다음 장소를 안내할 수 있어요.<br><br>'+
+     '위치는 이 기기 안에서만 쓰이고, 어디로도 보내지 않습니다.</p>';
+  h+='<div id="permbox"></div>';
+  h+='<p class="tNote" style="margin-top:26px">현장에 계시지 않아도 괜찮습니다.<br>아래에서 앉아서 읽기를 고르시면 걷지 않고 진행됩니다.</p>';
+  h+='<button class="btn ghost sm" id="skip">앉아서 읽기</button>';
+  h+='</div>';
+  html(h);
+  document.getElementById('skip').onclick=function(){
+    if(PERMtimer) clearInterval(PERMtimer);
+    G.remote=true; G.phase='intro'; G.ic=0; save(); route();
+  };
+  drawPerm('ask');
+}
+function drawPerm(state){
+  var b=document.getElementById('permbox');
+  if(!b) { if(PERMtimer) clearInterval(PERMtimer); return; }
+  if(state==='ask'){
+    b.innerHTML='<button class="btn" id="ask">위치 사용 허용</button>';
+    document.getElementById('ask').onclick=function(){
+      drawPerm('wait'); startGPS();
+      if(PERMtimer) clearInterval(PERMtimer);
+      PERMtimer=setInterval(function(){ if(pos) drawPerm('ok'); },800);
+      setTimeout(function(){ if(!pos) drawPerm('slow'); },12000);
+    };
+    return;
+  }
+  if(state==='wait'){
+    b.innerHTML='<p class="mid" style="text-align:center">위치를 찾는 중…<br>'+
+      '<span class="small">허용을 묻는 창이 뜨면 눌러주세요</span></p>'; return;
+  }
+  if(state==='slow'){
+    if(pos) return;
+    b.innerHTML='<div class="toast"><b>아직 위치를 못 잡았습니다</b><br>'+
+      '· 하늘이 트인 쪽으로 몇 걸음 옮겨보세요<br>'+
+      '· 설정 → Safari → 위치에서 <b>정확한 위치</b>가 켜져 있는지 확인해주세요<br>'+
+      '· 저전력 모드를 꺼주세요</div>'+
+      '<button class="btn ghost sm" id="retry">다시 시도</button>';
+    document.getElementById('retry').onclick=function(){ drawPerm('wait'); setTimeout(function(){ if(!pos) drawPerm('slow'); },12000); };
+    return;
+  }
+  if(state==='ok'){
+    var a=Math.round(pos.acc);
+    var q = a<=15 ? ['좋습니다','#5F7F66'] : (a<=35 ? ['쓸 만합니다','#5F7F66'] : ['조금 부정확합니다','#8A8071']);
+    b.innerHTML='<div class="toast"><b>위치를 찾았습니다</b><br>'+
+      '지금 오차 약 <b>'+a+'m</b> · '+q[0]+
+      (a>35?'<br><span class="small">잠시 서서 기다리면 더 정확해집니다. 지금 시작해도 진행에는 문제 없습니다.</span>':'')+
+      '</div><button class="btn" id="start">이제 시작합니다</button>';
+    document.getElementById('start').onclick=function(){
+      if(PERMtimer) clearInterval(PERMtimer);
+      G.phase='intro'; G.ic=0; save(); route();
+    };
+  }
 }
 
 function scrIntro(){
@@ -625,6 +686,7 @@ function scrIntro(){
 function route(){
   band();
   if(!G) return scrTitle();
+  if(G.phase==='perm') return scrPerm();
   if(G.phase==='intro') return scrIntro();
   if(G.phase==='chapter') return scrChapter();
   if(G.phase==='see') return scrSee();
@@ -799,7 +861,7 @@ function tickWalk(){
   if(G.remote==null){
     if(GHOST){ G.remote=true; save(); return scrWalk(); }
     if(pos){
-      G.remote = dist(pos,sp) > 500;
+      G.remote = dist(pos,sp) > 300;
       save();
       if(G.remote) return scrWalk();
     } else if(Date.now()-walkStart > 8000){
@@ -810,7 +872,8 @@ function tickWalk(){
   var de=document.getElementById('dist'), ae=document.getElementById('acc');
   if(!de) return;
   if(d!==null){
-    de.innerHTML='남은 거리 <b>'+(Math.round(d/10)*10)+'m</b>';
+    de.innerHTML = d<100 ? ('남은 거리 <b>'+Math.round(d)+'m</b>'+(d<=25?'<br><span style="font-size:12px">거의 다 왔습니다</span>':''))
+                         : ('남은 거리 <b>'+(Math.round(d/10)*10)+'m</b>');
     ae.textContent = pos.acc>60 ? ('GPS 오차 약 '+Math.round(pos.acc)+'m — 위치가 부정확합니다. 폰에서 열어주세요')
                                 : ('GPS 오차 약 '+Math.round(pos.acc)+'m');
     drawMap();
@@ -822,8 +885,12 @@ function tickWalk(){
   var el=Date.now()-walkStart;
   if(w.mid && !midShown && el>50000){ midShown=true; showMid(w.mid); return; }
   var ab=document.getElementById('arrivebox');
-  if(ab && !ab.innerHTML && (el>40000 || GHOST)){
-    ab.innerHTML='<button class="btn ghost sm" id="bk">여기 도착했습니다</button>';
+  /* 반경이 좁아 GPS만으로는 못 닿는 경우가 많다. 백업을 일찍 연다 */
+  var near = (d!==null && d<=60);
+  var rough = (pos && pos.acc > sp.r);
+  if(ab && !ab.innerHTML && (el>15000 || GHOST || (near && rough && el>6000))){
+    ab.innerHTML='<button class="btn ghost sm" id="bk">여기 도착했습니다</button>'+
+      '<p class="small" style="text-align:center;margin-top:6px">안내한 자리에 서 계시면 눌러주세요</p>';
     document.getElementById('bk').onclick=arriveNow;
   }
   setTimeout(tickWalk, 1200);
