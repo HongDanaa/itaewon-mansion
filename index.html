@@ -200,7 +200,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v0.9.3";
+var VERSION = "v0.9.4";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -211,8 +211,19 @@ var SPOTS = [
   {id:4, name:"가파른 오르막", lat:37.541488, lng:126.991791, r:5},   /* 260-40 */
   {id:5, name:"건물 밑", lat:37.541440, lng:126.991533, r:7}   /* 260-86 */
 ];
-var SAVED = localStorage.getItem('im_spots');
-if(SAVED){ try{ SPOTS = JSON.parse(SAVED); }catch(e){} }
+/* ?reset=1 이면 저장된 것 전부 지우고 새로 시작 */
+if(location.search.indexOf('reset=1')>-1){
+  try{ localStorage.removeItem('im_spots'); localStorage.removeItem('im_survey'); localStorage.removeItem('im_save'); }catch(e){}
+}
+/* 저장된 좌표는 같은 버전에서 수집한 것만 쓴다.
+   파일 좌표가 바뀌었는데 옛 저장본이 이기는 사고를 막는다 */
+var SPOTSRC='파일';
+try{
+  var SAVED = localStorage.getItem('im_spots');
+  var SAVEDV = localStorage.getItem('im_spots_v');
+  if(SAVED && SAVEDV===VERSION){ SPOTS = JSON.parse(SAVED); SPOTSRC='현장 수집'; }
+  else if(SAVED){ localStorage.removeItem('im_spots'); }
+}catch(e){}
 
 /* ===== 인트로 (8컷) ===== */
 var INTRO = [
@@ -645,7 +656,7 @@ function scrTitle(){
   h+=(load()? '<button class="btn ghost sm" id="cont">이어서 하기</button>':'');
   h+='</div>';
   h+='<p class="tNote">실제로 사람이 사는 건물입니다.<br>거주자에게 말을 걸지 말고, 조용히 봐주세요.<br>이어폰을 권합니다. 차와 계단을 조심하세요.</p>';
-  h+='<p class="tVer">'+VERSION+(GHOST?' · 유령 모드':'')+(SURVEY?' · 좌표 수집':'')+(DEBUG?' · 진단':'')+'</p>';
+  h+='<p class="tVer">'+VERSION+(GHOST?' · 유령 모드':'')+(SURVEY?' · 좌표 수집':'')+(DEBUG?' · 진단':'')+' · 좌표 '+SPOTSRC+'</p>';
   h+='</div>';
   html(h, true);
   document.getElementById('go').onclick=function(){ localStorage.removeItem('im_save'); G=newGame(); wake(); G.phase='perm'; save(); route(); };
@@ -720,9 +731,10 @@ function scrStart(){
   var sp=SPOTS[0];
   var h='<div class="wrap" style="padding-top:8vh">';
   h+='<h1 style="font-size:24px;margin-bottom:16px">시작 지점으로</h1>';
-  h+='<p class="guide">회나무로13나길, <b>파프리 공인중개사</b> 앞입니다.<br>'+
+  h+='<p class="guide"><b>파프리 공인중개사</b> 앞입니다.<br>'+
      '유리문에 매물 종이가 붙어 있는 그 자리요.<br><br>'+
      '그 앞에 서시면 이야기가 시작됩니다.</p>';
+  if(DEBUG) h+='<p class="small" style="font-family:var(--f-mono)">기준 좌표 '+SPOTS[0].lat.toFixed(6)+', '+SPOTS[0].lng.toFixed(6)+' (r'+SPOTS[0].r+') · 출처 '+SPOTSRC+'</p>';
   h+='<div class="lm" id="lm0"><img src="img/lm_0.jpg" onerror="this.style.display=\'none\';this.parentNode.textContent=\'파프리 공인중개사 앞\'"></div>';
   h+='<p id="dist">위치를 확인하는 중…</p><p id="acc"></p>';
   h+='<div id="stbox"></div>';
@@ -1163,7 +1175,7 @@ function drawSurvey(){
     var st3=JSON.parse(localStorage.getItem('im_survey')||'{}');
     for(var m=0;m<SPOTS.length;m++){ if(st3[m]){ SPOTS[m].lat=st3[m].lat; SPOTS[m].lng=st3[m].lng;
       SPOTS[m].r=Math.max(25, Math.round((st3[m].acc+12)/5)*5); } }
-    localStorage.setItem('im_spots', JSON.stringify(SPOTS));
+    localStorage.setItem('im_spots', JSON.stringify(SPOTS)); localStorage.setItem('im_spots_v', VERSION);
     location.href = location.pathname;
   };
   document.getElementById('mock').onclick=function(){
@@ -1175,11 +1187,11 @@ function drawSurvey(){
       SPOTS[i2].lng = pos.lng + off[i2][1]*mLng;
       SPOTS[i2].r = 20;
     }
-    localStorage.setItem('im_spots', JSON.stringify(SPOTS));
+    localStorage.setItem('im_spots', JSON.stringify(SPOTS)); localStorage.setItem('im_spots_v', VERSION);
     localStorage.removeItem('im_save');
     location.href = location.pathname;
   };
-  document.getElementById('clr').onclick=function(){ localStorage.removeItem('im_survey'); localStorage.removeItem('im_spots'); drawSurvey(); };
+  document.getElementById('clr').onclick=function(){ localStorage.removeItem('im_survey'); localStorage.removeItem('im_spots'); localStorage.removeItem('im_spots_v'); location.href=location.pathname+'?survey=1'; };
 }
 
 /* ===== 시작 ===== */
