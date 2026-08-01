@@ -161,9 +161,10 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 .chapPort{position:relative;width:132px;height:132px;border-radius:2px;margin:0 auto 22px;
   display:flex;align-items:center;justify-content:center;
   border:1px solid #4A463E;background:#2A2721;color:#9FB39C;
-  font-family:var(--f-mono);font-size:34px;font-weight:700;overflow:hidden}
-.chapPort pre.chapObj{font-family:var(--f-mono);font-size:9px;line-height:10px;
-  color:#9FB39C;margin:0;white-space:pre;text-align:left}
+  box-shadow:0 3px 12px rgba(0,0,0,.4);overflow:hidden}
+.chapPort img{width:100%;height:100%;object-fit:cover;display:block}
+.chapPort.noimg::after{content:attr(data-i);font-family:var(--f-mono);
+  font-size:34px;font-weight:700;color:#9FB39C}
 .chapPort::before{content:"";position:absolute;z-index:2;top:11px;left:50%;margin-left:-6px;
   width:12px;height:12px;border-radius:50%;background:var(--night);
   box-shadow:0 0 0 3px #3E3A32}
@@ -207,7 +208,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v0.9.8";
+var VERSION = "v1.0.1";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -254,15 +255,7 @@ var WALK = [
  {to:5, txt:"건물을 향해 다시 내려가세요.\n이번에는 지나치지 말고 건물 옆 주차장으로 들어가세요.\n\n처음으로, 집에 닿는 거리입니다."}
 ];
 
-/* ===== 챕터 카드 사물 (옷본 UI) ===== */
-var OBJ = [
-"    _____________\n   /            /|\n  /___________ / |\n |            |  |\n |  =======   |  |\n |  =======   | /\n |____________|/",
-"     _______\n    |       |\n   _|_______|_\n  |  ~~~~~~~  |\n  |           |\n  |           |\n  |___________|",
-"    ______\n   /      \\__\n  |  o        \\\n  |____   _____|\n      |  |\n   ___|__|___\n  |__________|",
-"     ||\n     ||\n     ||\n     ||\n    /||\\\n   /||||\\\n  /||||||\\\n /||||||||\\",
-"   ________________\n  |   ____         |\n  |  |    |        |\n  |__|____|________|\n  |________________|\n       \\______/",
-"   ________________\n  |                |\n  | ______________ |\n  | ______________ |\n  | ______________ |\n  |                |\n  | ____           |\n  |________________|"
-];
+
 
 /* ===== 세션 데이터 =====
 choices: [텍스트, 크기, dR, dV(0.1억), 속말, 특수]
@@ -742,7 +735,7 @@ function scrStart(){
      '유리문에 매물 종이가 붙어 있는 그 자리요.<br><br>'+
      (G.remote ? '이야기는 여기서 시작됩니다.' : '그 앞에 서시면 이야기가 시작됩니다.')+'</p>';
   if(DEBUG) h+='<p class="small" style="font-family:var(--f-mono)">기준 좌표 '+SPOTS[0].lat.toFixed(6)+', '+SPOTS[0].lng.toFixed(6)+' (r'+SPOTS[0].r+') · 출처 '+SPOTSRC+'</p>';
-  h+=lmBox(0, '파프리 공인중개사 앞');
+  h+=lmBox(0, '파프리 공인중개사 앞', '시작 지점 · 파프리 공인중개사');
   h+='<p id="dist">위치를 확인하는 중…</p><p id="acc"></p>';
   h+='<div id="stbox"></div>';
   if(!G.remote) h+='<p class="tNote" style="margin-top:20px">여기서 확인한 위치를 기준으로<br>나머지 장소를 더 정확하게 안내합니다.</p>';
@@ -775,6 +768,18 @@ function tickStart(){
   } else {
     de.innerHTML='<b style="font-size:14px">위치를 찾는 중…</b>';
     ae.textContent='하늘이 트인 곳에서 더 잘 잡힙니다';
+  }
+  var farNow = pos && dist(pos,sp) > 300;
+  if(!bx.innerHTML && farNow && (Date.now()-stStart>4000)){
+    bx.innerHTML='<div class="toast"><b>현장에서 멀리 떨어져 있습니다</b><br>'+
+      '지금 자리에서 시작 지점까지 '+Math.round(dist(pos,sp)/100)/10+'km 입니다.<br>'+
+      '앉아서 읽기로 진행하시면 걷지 않고 이야기를 볼 수 있습니다.</div>'+
+      '<button class="btn" id="far2">앉아서 읽기</button>'+
+      '<button class="btn ghost sm" id="here3">그래도 여기서 시작</button>';
+    document.getElementById('far2').onclick=function(){
+      clearInterval(STtimer); G.remote=true; G.phase='intro'; G.ic=0; save(); route(); };
+    document.getElementById('here3').onclick=function(){ confirmStart(false); };
+    return;
   }
   if(!bx.innerHTML && (Date.now()-stStart>12000)){
     bx.innerHTML='<button class="btn" id="here">여기가 시작 지점입니다</button>'+
@@ -830,7 +835,8 @@ function scrChapter(){
   var s=S[G.si];
   var h='<div class="chapCard">';
   h+='<p class="chapNum">'+ORD[G.si]+' 번째 만남</p>';
-  h+='<div class="chapPort"><pre class="chapObj">'+OBJ[G.si]+'</pre></div>';
+  h+='<div class="chapPort"><img src="img/ch_'+G.si+'.jpg" alt="" '+
+     'onerror="this.style.display=\'none\';this.parentNode.classList.add(\'noimg\');this.parentNode.setAttribute(\'data-i\',\''+s.ini+'\')"></div>';
   h+='<p class="chapName">'+s.name+'</p>';
   h+='<p class="chapSub">'+(s.sub||'')+'</p>';
   h+='</div>';
@@ -928,11 +934,12 @@ function scrSettle(){
 }
 
 /* 지점 사진. img/lm_N.jpg 가 없으면 글자만 남는다 */
-function lmBox(i, name){
+function lmBox(i, name, cap){
+  cap = (cap===undefined) ? ('다음 지점 · '+name) : cap;
   return '<div class="lm"><img src="img/lm_'+i+'.jpg" alt="" loading="lazy" '+
     'onerror="this.onerror=null;this.src=\'img/lm_'+i+'.png\';this.setAttribute(\'data-f\',1);'+
     'if(this.getAttribute(\'data-f2\')){this.style.display=\'none\';this.parentNode.textContent=\''+name.replace(/'/g,"")+'\';}else{this.setAttribute(\'data-f2\',1);}">'+
-    '<span class="lmcap">다음 지점 · '+name+'</span></div>';
+    '<span class="lmcap">'+cap+'</span></div>';
 }
 
 function scrWalk(){
