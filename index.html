@@ -211,7 +211,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.1.0";
+var VERSION = "v1.1.1";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -662,7 +662,7 @@ function playVoice(name, onend){
 function warmVoice(name){
   try{ var a=new Audio('audio/'+name+'.mp3'); a.preload='auto'; a.load(); }catch(e){}
 }
-function vid(n){ return 'v'+(n<10?'0':'')+n; }
+function vid(n){ return 'V-'+(n<10?'0':'')+n; }   /* 파일명 V-01.mp3 형식 */
 
 function tapNext(fn){
   var born=Date.now();
