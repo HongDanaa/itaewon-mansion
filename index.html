@@ -211,7 +211,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.1.1";
+var VERSION = "v1.2.0";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -638,6 +638,54 @@ function html(s, night){
 
 var LOCK=0;
 function locked(){ var t=Date.now(); if(t-LOCK<450) return true; LOCK=t; return false; }
+/* ===== 소리 버스 =====
+   BGM 두 채널: music(오프닝·엔딩) / layer(재봉틀·앰비언스)
+   파일이 없어도 게임은 그대로 진행된다 */
+var VOL = { opening:0.30, ending:0.42, sewing:0.26, amb:0.18, snap:0.55 };
+var BUS = { music:null, layer:null };
+
+function fadeTo(a, target, ms, done){
+  if(!a) return;
+  var from=a.volume, t0=Date.now();
+  if(a._fade) clearInterval(a._fade);
+  a._fade=setInterval(function(){
+    var k=Math.min(1,(Date.now()-t0)/ms);
+    try{ a.volume = from + (target-from)*k; }catch(e){}
+    if(k>=1){ clearInterval(a._fade); a._fade=null; if(done) done(); }
+  }, 50);
+}
+function busPlay(ch, name, vol, loop, fadeMs){
+  var cur=BUS[ch];
+  if(cur && cur._name===name) return cur;      /* 이미 같은 곡이 돌고 있음 */
+  busStop(ch, fadeMs||600);
+  var a=new Audio('audio/'+name+'.mp3');
+  a._name=name; a.loop=(loop!==false); a.preload='auto'; a.volume=0;
+  a.onerror=function(){ if(BUS[ch]===a) BUS[ch]=null; };
+  BUS[ch]=a;
+  var p=a.play();
+  if(p && p.catch) p.catch(function(){ if(BUS[ch]===a) BUS[ch]=null; });
+  fadeTo(a, vol, fadeMs||900);
+  return a;
+}
+function busStop(ch, ms){
+  var a=BUS[ch]; if(!a) return;
+  BUS[ch]=null;
+  fadeTo(a, 0, ms||600, function(){ try{ a.pause(); a.src=''; }catch(e){} });
+}
+function sfx(name, vol){
+  try{
+    var a=new Audio('audio/'+name+'.mp3');
+    a.volume=(vol===undefined?0.5:vol);
+    var p=a.play(); if(p && p.catch) p.catch(function(){});
+  }catch(e){}
+}
+/* 나레이션이 나올 때 음악을 낮춘다 */
+function duck(on){
+  if(BUS.music) fadeTo(BUS.music, on?VOL.opening*0.35:VOL.opening, 500);
+  if(BUS.layer && BUS.layer._name==='sewing') fadeTo(BUS.layer, on?VOL.sewing*0.5:VOL.sewing, 500);
+}
+function stopAllAudio(){ busStop('music',300); busStop('layer',300); stopVoice(); }
+
 /* ===== 소리 =====
    audio/v01.mp3 ~ v08.mp3  인트로 나레이션
    파일이 없어도 게임은 그대로 진행된다 */
@@ -688,7 +736,11 @@ function scrTitle(){
   h+='<p class="tVer">'+VERSION+(GHOST?' · 유령 모드':'')+(SURVEY?' · 좌표 수집':'')+(DEBUG?' · 진단':'')+' · 좌표 '+SPOTSRC+'</p>';
   h+='</div>';
   html(h, true);
-  document.getElementById('go').onclick=function(){ localStorage.removeItem('im_save'); G=newGame(); wake(); G.phase='perm'; save(); route(); };
+  document.getElementById('go').onclick=function(){
+    localStorage.removeItem('im_save'); G=newGame(); wake();
+    busPlay('music','opening',VOL.opening,true,1800);
+    G.phase='perm'; save(); route();
+  };
   var c=document.getElementById('cont'); if(c) c.onclick=function(){ G=load(); startGPS(); wake(); route(); };
 }
 
@@ -836,7 +888,10 @@ function confirmStart(auto){
 }
 
 function scrIntro(){
-  if(G.ic>=INTRO.length){ stopVoice(); G.phase='chapter'; G.si=0; G.bi=0; G.ri=0; save(); return route(); }
+  if(G.ic>=INTRO.length){
+    stopVoice(); busStop('music',3000); busStop('layer',1500);
+    G.phase='chapter'; G.si=0; G.bi=0; G.ri=0; save(); return route();
+  }
   html('<p class="recall serif">'+INTRO[G.ic]+'</p>'+
        '<p class="tapHint" id="ihint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>', true);
 
@@ -846,7 +901,11 @@ function scrIntro(){
     var e=document.getElementById('ihint');
     if(e){ e.textContent = VOICEfail ? '화면을 누르면 계속됩니다' : '화면을 누르면 계속됩니다'; e.style.opacity='1'; }
   }
-  playVoice(vid(n), reveal);
+  /* 1컷: 재봉틀 소리가 깔렸다가 "팔았다"에서 멎는다 */
+  if(n===1) busPlay('layer','sewing',VOL.sewing,true,2500);
+  else if(n===2) busStop('layer',2200);
+  duck(true);
+  playVoice(vid(n), function(){ duck(false); reveal(); });
   if(n < INTRO.length) warmVoice(vid(n+1));
   /* 소리가 없거나 아주 짧아도 최소 이 시간은 머문다 */
   setTimeout(function(){ if(VOICEfail) reveal(); }, 2600);
@@ -941,6 +1000,8 @@ function scrBeat(){
 }
 function pick(i){
   var s=S[G.si], b=s.beats[G.bi], c=b.ch[i];
+  /* 미싱을 가진 사람 앞에서 솔직할 때만 그 소리가 돌아온다 */
+  if(G.si===2 && G.bi===2 && c[4]===1) busPlay('layer','sewing',VOL.sewing,true,2000);
   G.pR+=c[2]; G.pV+=c[3]; G.pS+=c[4]; G.sok+=c[4];
   if(c[5]==='sign') G.sign=true;
   if(c[5]==='elder'){ G.elder=true; G.elderNow=true; }
@@ -957,6 +1018,7 @@ function scrReact(){
 }
 
 function endSession(){
+  busStop('layer',1800);
   var calm = G.pS>=2;
   var aR = calm?0:1, aV = calm?0:-2;
   G.R=Math.max(0,Math.min(100,G.R+G.pR+aR));
@@ -1007,6 +1069,7 @@ function lmBox(i, name, cap){
 
 function scrWalk(){
   var w=WALK[G.wi], sp=SPOTS[w.to];
+  busPlay('layer','amb',VOL.amb,true,2000);
   if(G.remote){ return scrWalkRemote(w,sp); }
   var h='';
   h+=lmBox(w.to, sp.name);
@@ -1123,6 +1186,8 @@ function showMid(txt){
 function arriveNow(){
   FIX=[]; if(G) G.nearHit=0;
   if(!G || G.phase!=='walk') return;
+  sfx('snap', VOL.snap);
+  busStop('layer',1200);
   G.phase='arrive'; save(); route();
 }
 function scrArrive(){
@@ -1137,8 +1202,13 @@ function endKey(){
   return G.sok>=12?'C2':'C1';
 }
 function scrEnding(){
-  var e=ENDINGS[endKey()];
+  var k=endKey(), e=ENDINGS[k];
   var step=G.ei||0;
+  /* 코드 둘째 자리: 1 우긴 채로 / 2 놓으면서 */
+  busPlay('music', k.charAt(1)==='2'?'ending_2':'ending_1', VOL.ending, true, 2500);
+  /* 놓은 엔딩에서는 미싱 소리가 돌아온다 */
+  if(k==='B2' || k==='C2') busPlay('layer','sewing',VOL.sewing*0.7,true,4000);
+  else busStop('layer',1500);
   if(step===0){
     var h='<p class="mid" style="margin-top:80px;text-align:center">전화가 온다</p>';
     h+='<p class="see serif" style="margin:20px 0 40px">파프리 공인중개사</p>';
