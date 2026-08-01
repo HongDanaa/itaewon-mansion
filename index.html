@@ -236,7 +236,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.6.2";
+var VERSION = "v1.7.0";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -667,7 +667,7 @@ function locked(){ var t=Date.now(); if(t-LOCK<450) return true; LOCK=t; return 
    BGM 두 채널: music(오프닝·엔딩) / layer(재봉틀·앰비언스)
    파일이 없어도 게임은 그대로 진행된다 */
 var VOL = { opening:0.30, ending:0.42, sewing:0.26, amb:0.18, snap:0.55 };
-var BUS = { music:null, layer:null };
+var BUS = { music:null, layer:null, under:null };
 
 function fadeTo(a, target, ms, done){
   if(!a) return;
@@ -707,9 +707,19 @@ function sfx(name, vol){
 /* 나레이션이 나올 때 음악을 낮춘다 */
 function duck(on){
   if(BUS.music) fadeTo(BUS.music, on?VOL.opening*0.35:VOL.opening, 500);
-  if(BUS.layer && BUS.layer._name==='sewing') fadeTo(BUS.layer, on?VOL.sewing*0.5:VOL.sewing, 500);
+  if(BUS.layer && BUS.layer._name==='sewing') fadeTo(BUS.layer, on?VOL.sewing*0.55:VOL.sewing, 500);
+  if(BUS.under) fadeTo(BUS.under, on?VOL.amb*0.6:VOL.amb, 500);
 }
-function stopAllAudio(){ busStop('music',300); busStop('layer',300); stopVoice(); }
+function stopAllAudio(){ busStop('music',300); busStop('layer',300); busStop('under',300); stopVoice(); }
+/* 건물 밑에서 위층 소리를 듣는 구간. 앰비언스 위에 재봉틀을 겹친다 */
+function underBuilding(on){
+  if(on){
+    busPlay('under','amb',VOL.amb,true,2500);
+    busPlay('layer','sewing',VOL.sewing*0.85,true,4000);
+  } else {
+    busStop('under',2500); busStop('layer',2500);
+  }
+}
 
 /* ===== 소리 =====
    audio/v01.mp3 ~ v08.mp3  인트로 나레이션
@@ -1014,6 +1024,8 @@ function voiceGate(name, hintId, next){
 
 function scrSee(){
   var s=S[G.si];
+  /* 마지막 지점. 건물 밑에서 위층 소리가 내려온다 */
+  if(G.si===5) underBuilding(true);
   html('<p class="see serif">'+s.see+'</p>'+
        '<p class="tapHint" id="shint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>');
   voiceGate('V-5'+G.si, 'shint', function(){ G.phase='recall'; G.ri=0; save(); route(); });
@@ -1022,7 +1034,12 @@ function scrSee(){
 var RECALL_BASE=[10, 12, 15, 18, 21, 24];
 function scrRecall(){
   var s=S[G.si];
-  if(G.ri>=s.recall.length){ stopVoice(); G.phase='beat'; G.bi=0; return route(); }
+  if(G.si===5) underBuilding(true);
+  if(G.ri>=s.recall.length){
+    stopVoice();
+    if(G.si===5) underBuilding(false);   /* 아들이 말을 걸면 소리가 멎는다 */
+    G.phase='beat'; G.bi=0; return route();
+  }
   html('<p class="recall serif">'+s.recall[G.ri]+'</p>'+
        '<p class="tapHint" id="rhint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>', true);
   voiceGate(vid(RECALL_BASE[G.si]+G.ri), 'rhint', function(){ G.ri++; save(); route(); });
@@ -1125,6 +1142,7 @@ function lmBox(i, name, cap){
 
 function scrWalk(){
   var w=WALK[G.wi], sp=SPOTS[w.to];
+  busStop('under',800);
   busPlay('layer','amb',VOL.amb,true,2000);
   G._midSaid = G._midSaid || {};
   if(G.remote){ return scrWalkRemote(w,sp); }
@@ -1245,7 +1263,7 @@ function arriveNow(){
   FIX=[]; if(G) G.nearHit=0;
   if(!G || G.phase!=='walk') return;
   sfx('snap', VOL.snap);
-  busStop('layer',1200);
+  busStop('layer',1200); busStop('under',1200);
   G.phase='arrive'; save(); route();
 }
 function scrArrive(){
