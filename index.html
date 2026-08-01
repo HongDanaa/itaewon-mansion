@@ -95,10 +95,14 @@ button{font-family:inherit;cursor:pointer}
   font-family:var(--f-body);letter-spacing:.04em}
 .btn.ghost{background:transparent;color:var(--green-d);border:1px dashed var(--line)}
 .btn.sm{padding:11px;font-size:14px}
-.lm{height:96px;border-radius:2px;background:var(--card);border:1px solid var(--line);
-  display:flex;align-items:center;justify-content:center;color:var(--ink3);
-  font-family:var(--f-mono);font-size:11px;margin:14px 0 12px;overflow:hidden}
-.lm img{width:100%;height:100%;object-fit:cover}
+.lm{position:relative;height:170px;border-radius:2px;background:var(--card);
+  border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+  color:var(--ink3);font-family:var(--f-mono);font-size:11px;margin:14px 0 12px;overflow:hidden}
+.lm img{width:100%;height:100%;object-fit:cover;filter:saturate(.72) contrast(1.04)}
+.lm .lmcap{position:absolute;left:0;right:0;bottom:0;padding:7px 10px;
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;color:#F0EADB;
+  background:linear-gradient(to top, rgba(33,30,25,.82), rgba(33,30,25,0))}
+body.night .lm{border-color:#4A463E;background:#2A2721}
 .guide{font-size:15px;line-height:1.8;margin:0 0 16px}
 #dist{text-align:center;font-size:13px;color:var(--ink2);margin:8px 0 4px;font-family:var(--f-mono)}
 #dist b{font-size:22px;font-weight:700;color:var(--ink)}
@@ -200,7 +204,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v0.9.5";
+var VERSION = "v0.9.6";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -735,7 +739,7 @@ function scrStart(){
      '유리문에 매물 종이가 붙어 있는 그 자리요.<br><br>'+
      '그 앞에 서시면 이야기가 시작됩니다.</p>';
   if(DEBUG) h+='<p class="small" style="font-family:var(--f-mono)">기준 좌표 '+SPOTS[0].lat.toFixed(6)+', '+SPOTS[0].lng.toFixed(6)+' (r'+SPOTS[0].r+') · 출처 '+SPOTSRC+'</p>';
-  h+='<div class="lm" id="lm0"><img src="img/lm_0.jpg" onerror="this.style.display=\'none\';this.parentNode.textContent=\'파프리 공인중개사 앞\'"></div>';
+  h+=lmBox(0, '파프리 공인중개사 앞');
   h+='<p id="dist">위치를 확인하는 중…</p><p id="acc"></p>';
   h+='<div id="stbox"></div>';
   h+='<p class="tNote" style="margin-top:20px">여기서 확인한 위치를 기준으로<br>나머지 장소를 더 정확하게 안내합니다.</p>';
@@ -912,11 +916,19 @@ function scrSettle(){
   });
 }
 
+/* 지점 사진. img/lm_N.jpg 가 없으면 글자만 남는다 */
+function lmBox(i, name){
+  return '<div class="lm"><img src="img/lm_'+i+'.jpg" alt="" loading="lazy" '+
+    'onerror="this.onerror=null;this.src=\'img/lm_'+i+'.png\';this.setAttribute(\'data-f\',1);'+
+    'if(this.getAttribute(\'data-f2\')){this.style.display=\'none\';this.parentNode.textContent=\''+name.replace(/'/g,"")+'\';}else{this.setAttribute(\'data-f2\',1);}">'+
+    '<span class="lmcap">다음 지점 · '+name+'</span></div>';
+}
+
 function scrWalk(){
   var w=WALK[G.wi], sp=SPOTS[w.to];
   if(G.remote){ return scrWalkRemote(w,sp); }
   var h='';
-  h+='<div class="lm">다음 지점 · '+sp.name+'</div>';
+  h+=lmBox(w.to, sp.name);
   h+='<p class="guide serif">'+w.txt+'</p>';
   h+='<div id="mapbox"></div>';
   h+='<div id="dist">남은 거리 <b>--</b></div><div id="acc"></div>';
@@ -928,7 +940,7 @@ function scrWalk(){
 
 function scrWalkRemote(w,sp){
   var h='';
-  h+='<div class="lm">다음 지점 · '+sp.name+'</div>';
+  h+=lmBox(w.to, sp.name);
   h+='<p class="guide serif">'+w.txt+'</p>';
   h+='<p class="small" style="text-align:center;margin-top:22px">현장 밖에서 플레이 중입니다. 걷기를 건너뛸 수 있어요.</p>';
   h+='<button class="btn" id="bk">다음 장소로</button>';
