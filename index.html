@@ -236,7 +236,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.7.0";
+var VERSION = "v1.8.0";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -1079,6 +1079,7 @@ function pick(i){
   G.seen=(G.seen||0)+1;
   if(c[5]==='elder'){ G.elder=true; G.elderNow=true; }
   G.log.push(c[0]);
+  if(c[4]) G.logS=(G.logS||[]).concat([c[0]]);
   G.lastPick=i; G.phase='react'; save(); route();
 }
 function scrReact(){
@@ -1281,6 +1282,129 @@ function endKey(){
 }
 var END_VID={A1:'V-40',A2:'V-41',B1:'V-42',B2:'V-43',C1:'V-44',C2:'V-45'};
 /* ===== 크레딧 ===== */
+/* ===== 결과 카드 (1080x1920) ===== */
+function pad2(n){ return (n<10?'0':'')+n; }
+function playStamp(){
+  var d=new Date();
+  var w=['일','월','화','수','목','금','토'][d.getDay()];
+  return d.getFullYear()+'. '+pad2(d.getMonth()+1)+'. '+pad2(d.getDate())+' ('+w+') '
+       + pad2(d.getHours())+':'+pad2(d.getMinutes());
+}
+function seenEndings(k){
+  var a=[];
+  try{ a=JSON.parse(localStorage.getItem('im_endings')||'[]'); }catch(e){}
+  if(k && a.indexOf(k)<0){ a.push(k); try{ localStorage.setItem('im_endings', JSON.stringify(a)); }catch(e){} }
+  return a;
+}
+function drawCard(cb){
+  var W=1080, H=1920;
+  var cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  var x=cv.getContext('2d');
+  var PAPER='#F0EADB', INK='#2B2721', INK2='#8A8071', GREEN='#5F7F66', LINE='#CDC4B0';
+  var F_S='"Gowun Batang", serif', F_B='"Gowun Dodum", sans-serif',
+      F_M='"Nanum Gothic Coding", monospace', F_H='"Nanum Pen Script", cursive';
+
+  x.fillStyle=PAPER; x.fillRect(0,0,W,H);
+  x.strokeStyle='rgba(43,39,33,.045)'; x.lineWidth=2;
+  for(var i=0;i<=W;i+=54){ x.beginPath(); x.moveTo(i,0); x.lineTo(i,H); x.stroke(); }
+  for(var j=0;j<=H;j+=54){ x.beginPath(); x.moveTo(0,j); x.lineTo(W,j); x.stroke(); }
+
+  function stitch(y, w, rot){
+    x.save(); x.translate(W/2, y); x.rotate((rot||-1)*Math.PI/180);
+    x.strokeStyle=GREEN; x.lineWidth=7; x.setLineDash([26,22]); x.lineCap='butt';
+    x.beginPath(); x.moveTo(-w/2,0); x.lineTo(w/2,0); x.stroke();
+    x.setLineDash([]); x.restore();
+  }
+  function txt(t, y, font, color, align){
+    x.font=font; x.fillStyle=color; x.textAlign=align||'center';
+    x.fillText(t, align==='left'?110:(align==='right'?W-110:W/2), y);
+  }
+  function wrapLines(t, font, maxW){
+    x.font=font; var out=[], line='';
+    for(var i=0;i<t.length;i++){
+      var ch=t[i];
+      if(x.measureText(line+ch).width>maxW){ out.push(line); line=ch; }
+      else line+=ch;
+    }
+    if(line) out.push(line); return out;
+  }
+
+  var k=endKey(), e=ENDINGS[k];
+  var y=170;
+
+  txt('이태원 맨션', y, '700 46px '+F_S, INK2); y+=40;
+  txt('회나무로13나길', y, '26px '+F_M, INK2); y+=92;
+  stitch(y, 420); y+=112;
+
+  var tl=wrapLines(e.t, '700 82px '+F_S, 860);
+  for(var a=0;a<tl.length;a++){ txt(tl[a], y, '700 82px '+F_S, INK); y+=96; }
+  y+=34;
+
+  x.strokeStyle=LINE; x.lineWidth=2;
+  x.beginPath(); x.moveTo(150,y); x.lineTo(W-150,y); x.stroke(); y+=78;
+  x.textAlign='left';  x.font='28px '+F_M; x.fillStyle=INK2; x.fillText('재개발 열기', 190, y);
+  x.textAlign='right'; x.font='700 54px '+F_M; x.fillStyle=INK; x.fillText(G.R+'%', W-190, y);
+  y+=78;
+  x.textAlign='left';  x.font='28px '+F_M; x.fillStyle=INK2; x.fillText('감정가', 190, y);
+  x.textAlign='right'; x.font='700 54px '+F_M; x.fillStyle=INK; x.fillText((G.V/10).toFixed(1)+'억', W-190, y);
+  y+=50;
+  x.strokeStyle=LINE; x.beginPath(); x.moveTo(150,y); x.lineTo(W-150,y); x.stroke();
+  y+=108;
+
+  txt('오늘 '+(G.seen||0)+'번 말했고', y, '40px '+F_B, INK); y+=60;
+  txt('그중 '+G.sok+'번이 처음 하는 말이었다', y, '40px '+F_B, INK); y+=100;
+
+  var pool=(G.logS && G.logS.length) ? G.logS : (G.log||[]);
+  var picks=pool.slice(-3);
+  if(picks.length){
+    txt('오늘 한 말 가운데', y, '24px '+F_M, INK2); y+=64;
+    for(var b=0;b<picks.length;b++){
+      var ls=wrapLines(picks[b], '38px '+F_H, 800);
+      for(var c2=0;c2<ls.length;c2++){ txt(ls[c2], y, '38px '+F_H, INK2); y+=48; }
+      y+=24;
+    }
+  }
+  y+=42;
+
+  var seen=seenEndings(null), left=6-seen.length;
+  stitch(y, 320, 1); y+=78;
+  txt(left>0 ? ('남은 결말이 '+left+'가지 더 있다') : '여섯 가지 결말을 모두 보았다',
+      y, '34px '+F_B, GREEN);
+  y+=104;
+
+  txt(playStamp(), y, '26px '+F_M, INK2); y+=46;
+  txt('hongdanaa.github.io/itaewon-mansion', y, '22px '+F_M, INK2);
+
+  cb(cv);
+}
+function shareCard(){
+  var btn=document.getElementById('sh');
+  function done(msg){ if(btn){ btn.disabled=false; btn.textContent=msg||'결과 저장하기'; } }
+  if(btn){ btn.disabled=true; btn.textContent='만드는 중…'; }
+  var go=function(){
+    try{
+      drawCard(function(cv){
+        cv.toBlob(function(blob){
+          if(!blob){ done('다시 시도'); return; }
+          var file=new File([blob],'itaewon-mansion.png',{type:'image/png'});
+          if(navigator.canShare && navigator.canShare({files:[file]})){
+            navigator.share({files:[file], title:'이태원 맨션'})
+              .then(function(){ done(); }).catch(function(){ done(); });
+          } else {
+            var a=document.createElement('a');
+            a.href=URL.createObjectURL(blob); a.download='itaewon-mansion.png';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+            done('저장했습니다');
+          }
+        }, 'image/png');
+      });
+    }catch(err){ done('다시 시도'); }
+  };
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(go)['catch'](go);
+  else go();
+}
+
 function creditsHTML(){
   function row(k,v){ return '<div class="crRow"><span class="crK">'+k+'</span><span class="crV">'+v+'</span></div>'; }
   var h='<div class="credits">';
@@ -1300,7 +1424,8 @@ function creditsHTML(){
   h+='<p class="crNote">파프리 공인중개사는 실재하지 않습니다.<br>'+
      '김씨도, 그의 아내도, 그의 아들도 없습니다.<br><br>'+
      '다만 저 건물에는 사람이 삽니다.<br>조용히 지나가 주세요.</p>';
-  h+='<button class="btn ghost" id="again" style="margin-top:34px">다시 걷는다</button>';
+  h+='<button class="btn" id="sh" style="margin-top:34px">결과 저장하기</button>';
+  h+='<button class="btn ghost" id="again" style="margin-top:10px">다시 걷는다</button>';
   h+='</div>';
   return h;
 }
@@ -1308,6 +1433,7 @@ function creditsHTML(){
 function scrEnding(){
   var k=endKey(), e=ENDINGS[k];
   var step=G.ei||0;
+  if(step===0) seenEndings(k);
   /* 코드 둘째 자리: 1 우긴 채로 / 2 놓으면서 */
   busPlay('music', k.charAt(1)==='2'?'ending_2':'ending_1', VOL.ending, true, 2500);
   /* 놓은 엔딩에서는 미싱 소리가 돌아온다 */
@@ -1365,6 +1491,7 @@ function scrEnding(){
   else {
     html(creditsHTML(), true);
     localStorage.removeItem('im_save');
+    document.getElementById('sh').onclick=function(ev){ if(ev) ev.stopPropagation(); shareCard(); };
     document.getElementById('again').onclick=function(){ stopAllAudio(); G=newGame(); band(); scrTitle(); };
     return;
   }
