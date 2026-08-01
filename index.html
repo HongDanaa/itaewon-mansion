@@ -95,13 +95,16 @@ button{font-family:inherit;cursor:pointer}
   font-family:var(--f-body);letter-spacing:.04em}
 .btn.ghost{background:transparent;color:var(--green-d);border:1px dashed var(--line)}
 .btn.sm{padding:11px;font-size:14px}
-.lm{position:relative;height:170px;border-radius:2px;background:var(--card);
-  border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
-  color:var(--ink3);font-family:var(--f-mono);font-size:11px;margin:14px 0 12px;overflow:hidden}
-.lm img{width:100%;height:100%;object-fit:cover;filter:saturate(.72) contrast(1.04)}
-.lm .lmcap{position:absolute;left:0;right:0;bottom:0;padding:7px 10px;
+/* 사진은 원본 비율 그대로. 자르지 않는다 */
+.lm{position:relative;display:block;border-radius:2px;background:var(--card);
+  border:1px solid var(--line);color:var(--ink3);font-family:var(--f-mono);
+  font-size:11px;text-align:center;min-height:46px;line-height:46px;
+  margin:14px 0 12px;overflow:hidden}
+.lm img{display:block;width:100%;height:auto;max-height:44vh;object-fit:contain;
+  filter:saturate(.78) contrast(1.03)}
+.lm .lmcap{position:absolute;left:0;right:0;bottom:0;padding:8px 10px;line-height:1.3;
   font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;color:#F0EADB;
-  background:linear-gradient(to top, rgba(33,30,25,.82), rgba(33,30,25,0))}
+  background:linear-gradient(to top, rgba(33,30,25,.86), rgba(33,30,25,0))}
 body.night .lm{border-color:#4A463E;background:#2A2721}
 .guide{font-size:15px;line-height:1.8;margin:0 0 16px}
 #dist{text-align:center;font-size:13px;color:var(--ink2);margin:8px 0 4px;font-family:var(--f-mono)}
@@ -204,7 +207,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v0.9.6";
+var VERSION = "v0.9.7";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
