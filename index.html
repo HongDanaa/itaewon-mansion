@@ -207,7 +207,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v0.9.7";
+var VERSION = "v0.9.8";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -686,7 +686,7 @@ function scrPerm(){
   html(h);
   document.getElementById('skip').onclick=function(){
     if(PERMtimer) clearInterval(PERMtimer);
-    G.remote=true; G.phase='intro'; G.ic=0; save(); route();
+    G.remote=true; G.phase='start'; G.ic=0; save(); route();
   };
   drawPerm('ask');
 }
@@ -726,7 +726,7 @@ function drawPerm(state){
       '</div><button class="btn" id="start">이제 시작합니다</button>';
     document.getElementById('start').onclick=function(){
       if(PERMtimer) clearInterval(PERMtimer);
-      G.phase = G.remote ? 'intro' : 'start'; G.ic=0; save(); route();
+      G.phase='start'; G.ic=0; save(); route();
     };
   }
 }
@@ -740,14 +740,22 @@ function scrStart(){
   h+='<h1 style="font-size:24px;margin-bottom:16px">시작 지점으로</h1>';
   h+='<p class="guide"><b>파프리 공인중개사</b> 앞입니다.<br>'+
      '유리문에 매물 종이가 붙어 있는 그 자리요.<br><br>'+
-     '그 앞에 서시면 이야기가 시작됩니다.</p>';
+     (G.remote ? '이야기는 여기서 시작됩니다.' : '그 앞에 서시면 이야기가 시작됩니다.')+'</p>';
   if(DEBUG) h+='<p class="small" style="font-family:var(--f-mono)">기준 좌표 '+SPOTS[0].lat.toFixed(6)+', '+SPOTS[0].lng.toFixed(6)+' (r'+SPOTS[0].r+') · 출처 '+SPOTSRC+'</p>';
   h+=lmBox(0, '파프리 공인중개사 앞');
   h+='<p id="dist">위치를 확인하는 중…</p><p id="acc"></p>';
   h+='<div id="stbox"></div>';
-  h+='<p class="tNote" style="margin-top:20px">여기서 확인한 위치를 기준으로<br>나머지 장소를 더 정확하게 안내합니다.</p>';
+  if(!G.remote) h+='<p class="tNote" style="margin-top:20px">여기서 확인한 위치를 기준으로<br>나머지 장소를 더 정확하게 안내합니다.</p>';
   h+='</div>';
   html(h);
+  if(G.remote || GHOST){
+    document.getElementById('stbox').innerHTML='<button class="btn" id="here2">여기서 시작합니다</button>';
+    document.getElementById('here2').onclick=function(){ G.phase='intro'; G.ic=0; save(); route(); };
+    var de0=document.getElementById('dist'), ae0=document.getElementById('acc');
+    if(de0) de0.innerHTML='';
+    if(ae0) ae0.textContent='';
+    return;
+  }
   stStart=Date.now();
   startGPS();
   if(STtimer) clearInterval(STtimer);
