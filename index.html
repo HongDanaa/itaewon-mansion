@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#F0EADB">
+<link rel="icon" type="image/png" sizes="32x32" href="img/icon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="img/icon-64.png">
+<link rel="apple-touch-icon" sizes="180x180" href="img/icon-180.png">
 <title>이태원 맨션</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +23,7 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);
-  font-family:var(--f-body); overscroll-behavior:none;}
+  font-family:var(--f-body); overscroll-behavior:none; overflow-anchor:none;}
 body{min-height:100vh;min-height:100dvh;}
 
 /* ===== 패턴지: 방안 격자 ===== */
@@ -37,7 +40,7 @@ body.night #app{background-image:none}
 h1{font-size:30px;font-weight:700;letter-spacing:-.5px;margin:38px 0 6px;font-family:var(--f-serif)}
 p{line-height:1.75;margin:0 0 14px}
 .small{font-size:12.5px;color:var(--ink3);line-height:1.6}
-.mid{font-size:13.5px;color:var(--ink2);line-height:1.7}
+.mid{font-size:13.5px;color:var(--ink2);line-height:1.7;white-space:pre-line}
 button{font-family:inherit;cursor:pointer}
 
 /* ===== 줄자 게이지 ===== */
@@ -74,11 +77,11 @@ button{font-family:inherit;cursor:pointer}
 .say{font-size:15.5px;line-height:1.85;margin:0 0 20px;white-space:pre-line}
 .recall{font-size:16px;line-height:1.95;margin:26px 0;white-space:pre-line}
 .see{font-size:17px;line-height:1.9;margin:70px 0 60px;text-align:center;white-space:pre-line}
-.tapHint{text-align:center;font-size:12px;color:var(--ink3);margin:26px 0 10px;
+.tapHint{text-align:center;font-size:13px;color:var(--ink2);margin:26px 0 10px;
   font-family:var(--f-mono);letter-spacing:.12em}
 
 /* ===== 선택지: 박음질 3결 ===== */
-.ch{display:block;width:100%;text-align:left;background:var(--paper);
+.ch{display:block;width:100%;text-align:left;background:var(--paper);white-space:pre-line;
   border:1px solid var(--line);border-radius:0;padding:13px 15px;margin:9px 0;color:var(--ink)}
 .ch:active{background:var(--card)}
 .ch.big{font-size:17.5px;font-weight:700;line-height:1.55;
@@ -109,7 +112,7 @@ button{font-family:inherit;cursor:pointer}
   font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;color:#F0EADB;
   background:linear-gradient(to top, rgba(33,30,25,.86), rgba(33,30,25,0))}
 body.night .lm{border-color:#4A463E;background:#2A2721}
-.guide{font-size:15px;line-height:1.8;margin:0 0 16px}
+.guide{font-size:15px;line-height:1.8;margin:0 0 16px;white-space:pre-line}
 #dist{text-align:center;font-size:13px;color:var(--ink2);margin:8px 0 4px;font-family:var(--f-mono)}
 #dist b{font-size:22px;font-weight:700;color:var(--ink)}
 #acc{text-align:center;font-size:11px;color:var(--ink3);margin-bottom:14px;font-family:var(--f-mono)}
@@ -132,7 +135,8 @@ html,body{transition:background-color .5s ease}
 body.night{background:var(--night)}
 body.night #band{background:var(--night)}
 body.night .recall,body.night .see,body.night h1{color:#F0EADB}
-body.night .tapHint,body.night .small{color:#8A8071}
+body.night .small{color:#8A8071}
+body.night .tapHint{color:#A79F8E}
 body.night .mid{color:#A79F8E}
 body.night p{color:#DCD4C2}
 body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
@@ -236,7 +240,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.8.0";
+var VERSION = "v1.8.5";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -658,7 +662,10 @@ function html(s, night){
   scr.className='wrap';
   void scr.offsetWidth;
   scr.className='wrap fade';
+  /* 스크롤 앵커링·모멘텀이 위치를 되살리는 경우가 있어 세 번 민다 */
   window.scrollTo(0,0);
+  document.documentElement.scrollTop=0; document.body.scrollTop=0;
+  requestAnimationFrame(function(){ window.scrollTo(0,0); });
 }
 
 var LOCK=0;
@@ -666,7 +673,7 @@ function locked(){ var t=Date.now(); if(t-LOCK<450) return true; LOCK=t; return 
 /* ===== 소리 버스 =====
    BGM 두 채널: music(오프닝·엔딩) / layer(재봉틀·앰비언스)
    파일이 없어도 게임은 그대로 진행된다 */
-var VOL = { opening:0.30, ending:0.42, sewing:0.26, amb:0.18, snap:0.55 };
+var VOL = { opening:0.30, ending:0.42, sewing:0.20, amb:0.18, snap:0.55 };
 var BUS = { music:null, layer:null, under:null };
 
 function fadeTo(a, target, ms, done){
@@ -707,10 +714,20 @@ function sfx(name, vol){
 /* 나레이션이 나올 때 음악을 낮춘다 */
 function duck(on){
   if(BUS.music) fadeTo(BUS.music, on?VOL.opening*0.35:VOL.opening, 500);
-  if(BUS.layer && BUS.layer._name==='sewing') fadeTo(BUS.layer, on?VOL.sewing*0.55:VOL.sewing, 500);
+  if(BUS.layer && BUS.layer._name==='sewing') fadeTo(BUS.layer, on?VOL.sewing*0.32:VOL.sewing, 500);
   if(BUS.under) fadeTo(BUS.under, on?VOL.amb*0.6:VOL.amb, 500);
 }
 function stopAllAudio(){ busStop('music',300); busStop('layer',300); busStop('under',300); stopVoice(); }
+/* 오프닝 음악 점화. 타이틀~인트로에서만 동작한다.
+   이 가드가 없으면 인트로 이후 탭할 때마다 오프닝이 되살아나 소리가 겹친다 */
+function openMusic(){
+  if(G && G.phase!=='perm' && G.phase!=='start' && G.phase!=='intro'){ dropOpenMusic(); return; }
+  if(!BUS.music) busPlay('music','opening',VOL.opening,true,2600);
+}
+function dropOpenMusic(){
+  document.removeEventListener('touchstart', openMusic);
+  document.removeEventListener('click', openMusic);
+}
 /* 건물 밑에서 위층 소리를 듣는 구간. 앰비언스 위에 재봉틀을 겹친다 */
 function underBuilding(on){
   if(on){
@@ -747,6 +764,13 @@ function warmVoice(name){
 }
 function vid(n){ return 'V-'+(n<10?'0':'')+n; }   /* 파일명 V-01.mp3 형식 */
 
+/* 읽기 전용 화면(인트로·회상)에서 좌측 28% 터치 = 한 컷 뒤로.
+   선택(react) 이후로는 절대 돌아가지 않는다. 말은 주워담을 수 없다 */
+function isBackZone(e){
+  if(!e || e.clientX===undefined) return false;
+  var r=scr.getBoundingClientRect();
+  return (e.clientX - r.left) < r.width*0.28;
+}
 function tapNext(fn){
   var born=Date.now();
   scr.onclick=function(){
@@ -772,10 +796,12 @@ function scrTitle(){
   h+='</div>';
   html(h, true);
   /* 타이틀에서 바로 깔린다. 자동재생이 막히면 첫 탭에서 풀린다 */
-  function openMusic(){ if(!BUS.music) busPlay('music','opening',VOL.opening,true,2600); }
   openMusic();
+  document.removeEventListener('touchstart', openMusic);
+  document.removeEventListener('click', openMusic);
   document.addEventListener('touchstart', openMusic);
   document.addEventListener('click', openMusic);
+  warmVoice('V-01');   /* 첫 컷 버퍼링 스터터 방지 */
   document.getElementById('go').onclick=function(){
     localStorage.removeItem('im_save'); G=newGame(); wake(); openMusic();
     G.phase='perm'; save(); route();
@@ -928,17 +954,23 @@ function confirmStart(auto){
 
 function scrIntro(){
   if(G.ic>=INTRO.length){
+    dropOpenMusic();
     stopVoice(); busStop('music',3000); busStop('layer',1500);
     G.phase='chapter'; G.si=0; G.bi=0; G.ri=0; save(); return route();
   }
+  var navTip='';
+  if(G.ic>0 && !localStorage.getItem('im_navhint')){
+    navTip='<p class="small" style="text-align:center;margin-top:6px;opacity:.75">화면 왼쪽을 누르면 앞 장면으로 돌아갑니다</p>';
+    try{ localStorage.setItem('im_navhint','1'); }catch(e){}
+  }
   html('<p class="recall serif">'+INTRO[G.ic]+'</p>'+
-       '<p class="tapHint" id="ihint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>', true);
+       '<p class="tapHint" id="ihint" style="opacity:.45;transition:opacity .8s ease">· 듣는 중 ·</p>'+navTip, true);
 
   var n=G.ic+1, armed=false, tapped=0;
   function reveal(){
     armed=true;
     var e=document.getElementById('ihint');
-    if(e){ e.textContent = VOICEfail ? '화면을 누르면 계속됩니다' : '화면을 누르면 계속됩니다'; e.style.opacity='1'; }
+    if(e){ e.textContent='화면을 누르면 계속됩니다'; e.style.opacity='1'; }
   }
   /* 1컷: 재봉틀 소리가 깔렸다가 "팔았다"에서 멎는다 */
   if(n===1) busPlay('layer','sewing',VOL.sewing,true,2500);
@@ -950,9 +982,14 @@ function scrIntro(){
   setTimeout(function(){ if(VOICEfail) reveal(); }, 2600);
 
   var born=Date.now();
-  scr.onclick=function(){
+  scr.onclick=function(ev){
     if(Date.now()-born<450) return;
     if(locked()) return;
+    if(isBackZone(ev)){
+      /* 첫 컷에서는 뒤가 없다. 무반응 */
+      if(G.ic>0){ scr.onclick=null; stopVoice(); duck(false); G.ic--; save(); route(); }
+      return;
+    }
     if(!armed){
       /* 아직 듣는 중. 한 번 더 누르면 건너뛴다 */
       tapped++;
@@ -1000,16 +1037,21 @@ function scrChapter(){
 }
 
 /* 음성이 끝나야 힌트가 뜬다. 듣는 중에 누르면 한 번 더 누르라고 알린다 */
-function voiceGate(name, hintId, next){
+function voiceGate(name, hintId, next, back){
   var armed=false, tapped=0;
-  function reveal(){ armed=true; var e=document.getElementById(hintId); if(e) e.style.opacity='1'; }
+  function reveal(){ armed=true; var e=document.getElementById(hintId);
+    if(e){ e.textContent='화면을 누르면 계속됩니다'; e.style.opacity='1'; } }
   duck(true);
   playVoice(name, function(){ duck(false); reveal(); });
   setTimeout(function(){ if(VOICEfail) reveal(); }, 2200);
   var born=Date.now();
-  scr.onclick=function(){
+  scr.onclick=function(ev){
     if(Date.now()-born<450) return;
     if(locked()) return;
+    if(back!==undefined && isBackZone(ev)){
+      if(back){ scr.onclick=null; stopVoice(); duck(false); back(); }
+      return;
+    }
     if(!armed){
       tapped++;
       if(tapped===1){
@@ -1027,7 +1069,7 @@ function scrSee(){
   /* 마지막 지점. 건물 밑에서 위층 소리가 내려온다 */
   if(G.si===5) underBuilding(true);
   html('<p class="see serif">'+s.see+'</p>'+
-       '<p class="tapHint" id="shint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>');
+       '<p class="tapHint" id="shint" style="opacity:.45;transition:opacity .8s ease">· 듣는 중 ·</p>');
   voiceGate('V-5'+G.si, 'shint', function(){ G.phase='recall'; G.ri=0; save(); route(); });
 }
 /* 회상 음성 번호. 세션별 시작값 + 회상 순서 (V-10 ~ V-25) */
@@ -1041,8 +1083,10 @@ function scrRecall(){
     G.phase='beat'; G.bi=0; return route();
   }
   html('<p class="recall serif">'+s.recall[G.ri]+'</p>'+
-       '<p class="tapHint" id="rhint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>', true);
-  voiceGate(vid(RECALL_BASE[G.si]+G.ri), 'rhint', function(){ G.ri++; save(); route(); });
+       '<p class="tapHint" id="rhint" style="opacity:.45;transition:opacity .8s ease">· 듣는 중 ·</p>', true);
+  voiceGate(vid(RECALL_BASE[G.si]+G.ri), 'rhint',
+    function(){ G.ri++; save(); route(); },
+    G.ri>0 ? function(){ G.ri--; save(); route(); } : null);
 }
 function scrBeat(){
   var s=S[G.si], b=s.beats[G.bi];
@@ -1220,20 +1264,21 @@ function tickWalk(){
                          : ('남은 거리 <b>'+(Math.round(d/10)*10)+'m</b>');
     ae.textContent = pos.acc>60 ? ('GPS 오차 약 '+Math.round(pos.acc)+'m — 위치가 부정확합니다. 폰에서 열어주세요')
                                 : ('GPS 오차 약 '+Math.round(pos.acc)+'m');
+    var lead = (rk[1] ? rk[1].d - rk[0].d : 99);
     if(DEBUG){
       var dh='<div class="toast" style="text-align:left;font-family:var(--f-mono);font-size:11px">'+
         '<b>진단</b> 표본 '+FIX.length+' · 평활오차 '+Math.round(cp.acc)+'m · 보정 '+(G.cal?'있음':'없음')+'<br>';
       for(var z=0;z<rk.length;z++)
         dh+= (rk[z].i===w.to?'▶ ':'&nbsp;&nbsp; ')+rk[z].i+' '+SPOTS[rk[z].i].name+' : '+Math.round(rk[z].d)+'m (r'+SPOTS[rk[z].i].r+')<br>';
       dh+='2등과 차이 '+Math.round(lead)+'m · 연속 '+(G.nearHit||0)+'/3</div>';
-      ae.insertAdjacentHTML('afterend', '<div id="dbg">'+dh+'</div>');
-      var old2=document.getElementById('dbg'); if(old2 && old2.nextElementSibling && old2.nextElementSibling.id==='dbg') old2.remove();
+      var dbgEl=document.getElementById('dbg');
+      if(dbgEl) dbgEl.innerHTML=dh;
+      else ae.insertAdjacentHTML('afterend', '<div id="dbg">'+dh+'</div>');
     }
     drawMap();
     /* (가) 반경 안에 확실히 들어옴 */
     if(d<=sp.r){ return arriveNow(); }
     /* (나) 목표가 가장 가깝고, 2등과 충분히 벌어지고, 여유 반경 안 */
-    var lead = (rk[1] ? rk[1].d - rk[0].d : 99);
     if(rk[0].i===w.to && d<=sp.r*2.5 && lead>=8 && FIX.length>=4){
       G.nearHit=(G.nearHit||0)+1;
       if(G.nearHit>=3){ G.nearHit=0; return arriveNow(); }
@@ -1257,7 +1302,7 @@ function tickWalk(){
 }
 function showMid(txt){
   html('<p class="recall serif">'+txt+'</p>'+
-       '<p class="tapHint" id="mhint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>', true);
+       '<p class="tapHint" id="mhint" style="opacity:.45;transition:opacity .8s ease">· 듣는 중 ·</p>', true);
   voiceGate('V-30', 'mhint', function(){ if(G.remote){ arriveNow(); } else { scrWalk(); } });
 }
 function arriveNow(){
@@ -1388,7 +1433,8 @@ function shareCard(){
           if(!blob){ done('다시 시도'); return; }
           var file=new File([blob],'itaewon-mansion.png',{type:'image/png'});
           if(navigator.canShare && navigator.canShare({files:[file]})){
-            navigator.share({files:[file], title:'이태원 맨션'})
+            navigator.share({files:[file], title:'이태원 맨션',
+              text:'이태원 맨션 · '+playStamp()+' 걸은 기록\nhongdanaa.github.io/itaewon-mansion'})
               .then(function(){ done(); }).catch(function(){ done(); });
           } else {
             var a=document.createElement('a');
@@ -1458,7 +1504,7 @@ function scrEnding(){
     h+='<p class="recall serif" style="margin-top:20px">'+e.b+'</p>';
     h+='<p class="mid" style="margin-top:14px">'+e.g+'<br>'+e.l+'</p>';
     h+='<p class="small" style="margin-top:16px">재개발 열기 '+G.R+'% · 감정가 '+(G.V/10).toFixed(1)+'억</p>';
-    h+='<p class="tapHint" id="ehint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>';
+    h+='<p class="tapHint" id="ehint" style="opacity:.45;transition:opacity .8s ease">· 듣는 중 ·</p>';
     html(h);
     /* 중개사가 결말을 들려준다. 김씨가 아닌 유일한 목소리 */
     voiceGate(END_VID[k], 'ehint', function(){ G.ei=step+1; save(); route(); });
@@ -1482,7 +1528,7 @@ function scrEnding(){
        '어디선가 재개발은 실제로 논의되고 있다.\n그게 꼭 누군가에게 나쁜 일만은 아닐 것이다.\n\n'+
        '하지만 우리는 언젠가\n이 이야기를 걸을 수 없게 될 것이다.</p>';
     h+='<p class="noteSign">2026. 여름 홍정민</p></div>';
-    h+='<p class="tapHint" id="nhint" style="opacity:0;transition:opacity .8s ease">화면을 누르면 계속됩니다</p>';
+    h+='<p class="tapHint" id="nhint" style="opacity:.45;transition:opacity .8s ease">· 듣는 중 ·</p>';
     html(h, true);
     /* 작가 본인 목소리 */
     voiceGate('V-60', 'nhint', function(){ G.ei=step+1; save(); route(); });
