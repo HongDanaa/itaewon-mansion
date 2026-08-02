@@ -240,7 +240,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.9.2";
+var VERSION = "v1.10.0";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -673,7 +673,7 @@ function locked(){ var t=Date.now(); if(t-LOCK<450) return true; LOCK=t; return 
 /* ===== 소리 버스 =====
    BGM 두 채널: music(오프닝·엔딩) / layer(재봉틀·앰비언스)
    파일이 없어도 게임은 그대로 진행된다 */
-var VOL = { opening:0.30, ending:0.42, sewing:0.20, amb:0.18, snap:0.55, walk:0.20 };
+var VOL = { opening:0.30, ending:0.42, sewing:0.20, amb:0.18, snap:0.55, bed:0.12 };
 var BUS = { music:null, layer:null, under:null };
 
 function fadeTo(a, target, ms, done){
@@ -718,6 +718,15 @@ function duck(on){
   d(BUS.music, 0.35);
   if(BUS.layer && BUS.layer._name==='sewing') d(BUS.layer, 0.32);
   d(BUS.under, 0.6);
+}
+/* 타이틀·인트로가 끝난 뒤에도 같은 곡을 낮게 계속 깐다.
+   엔딩에서만 다른 곡으로 교체된다 */
+function bedMusic(){
+  if(!G || G.phase==='ending') return;
+  if(!BUS.music){ busPlay('music','opening',VOL.bed,true,2500); return; }
+  if(BUS.music._name==='opening' && BUS.music._base!==VOL.bed){
+    BUS.music._base=VOL.bed; fadeTo(BUS.music, VOL.bed, 3000);
+  }
 }
 function stopAllAudio(){ busStop('music',300); busStop('layer',300); busStop('under',300); stopVoice(); }
 /* 오프닝 음악 점화. 타이틀~인트로에서만 동작한다.
@@ -912,7 +921,15 @@ function tickStart(){
     var d=dist(pos,sp);
     de.innerHTML = d<150 ? ('시작 지점까지 <b>'+Math.round(d)+'m</b>') : ('시작 지점까지 <b>'+(Math.round(d/10)*10)+'m</b>');
     ae.textContent='GPS 오차 약 '+Math.round(pos.acc)+'m';
-    if(d<=sp.r && !bx.innerHTML) return confirmStart('auto');
+    /* 위치가 맞아도 자동으로 넘기지 않는다.
+       걷기 전에 "여기가 그 자리다"를 눈으로 확인하는 박자를 둔다 */
+    if(d<=sp.r && !bx.innerHTML){
+      bx.innerHTML='<div class="toast"><b>이 자리가 맞습니다</b><br>'+
+        '파프리 공인중개사 앞에 서 계십니다.</div>'+
+        '<button class="btn" id="hereOK">여기서 시작합니다</button>';
+      document.getElementById('hereOK').onclick=function(){ confirmStart('auto'); };
+      return;
+    }
   } else {
     de.innerHTML='<b style="font-size:14px">위치를 찾는 중…</b>';
     ae.textContent='하늘이 트인 곳에서 더 잘 잡힙니다';
@@ -960,7 +977,7 @@ function confirmStart(mode){
 function scrIntro(){
   if(G.ic>=INTRO.length){
     dropOpenMusic();
-    stopVoice(); busStop('music',3000); busStop('layer',1500);
+    stopVoice(); bedMusic(); busStop('layer',1500);
     G.phase='chapter'; G.si=0; G.bi=0; G.ri=0; save(); return route();
   }
   var navTip='';
@@ -1028,6 +1045,7 @@ function route(){
 
 var ORD=['첫','두','세','네','다섯','여섯'];
 function scrChapter(){
+  bedMusic();
   var s=S[G.si];
   var h='<div class="chapCard">';
   h+='<p class="chapNum">'+ORD[G.si]+' 번째 만남</p>';
@@ -1125,7 +1143,11 @@ function pick(i){
   /* 미싱을 가진 사람 앞에서 솔직할 때만 그 소리가 돌아온다 */
   /* 김씨가 그 소리를 그리워한다고 처음 인정하는 순간.
      대화 비트에는 나레이션이 없어 덕킹이 안 걸리므로 낮게, 그리고 길게 스미도록 */
-  if(G.si===2 && G.bi===2 && c[4]===1) busPlay('layer','sewing',0.13,true,7000);
+  if(G.si===2 && G.bi===2 && c[4]===1){
+    busPlay('layer','sewing',0.20,true,7000);
+    /* 소리를 더하는 게 아니라 자리를 내준다. 음악이 물러나고 미싱이 앞에 선다 */
+    if(BUS.music){ BUS.music._base=VOL.bed*0.45; fadeTo(BUS.music, VOL.bed*0.45, 7000); }
+  }
   G.pR+=c[2]; G.pV+=c[3]; G.pS+=c[4]; G.sok+=c[4];
   G.seen=(G.seen||0)+1;
   if(c[5]==='elder'){ G.elder=true; G.elderNow=true; }
@@ -1143,7 +1165,7 @@ function scrReact(){
 }
 
 function endSession(){
-  busStop('layer',1800);
+  busStop('layer',1800); bedMusic();
   var calm = G.pS>=2;
   var aR = calm?0:1, aV = calm?0:-2;
   G.R=Math.max(0,Math.min(100,G.R+G.pR+aR));
@@ -1196,9 +1218,7 @@ function scrWalk(){
   var w=WALK[G.wi], sp=SPOTS[w.to];
   busStop('under',800);
   busPlay('layer','amb',VOL.amb,true,2000);
-  /* 걷기 BGM. 전반(1·2번 지점) / 후반(3·4·5번 지점) 두 곡.
-     music 버스는 걷는 동안 비어 있고 duck()이 이미 이 버스를 잡는다 */
-  busPlay('music', G.wi<=1?'walk_1':'walk_2', VOL.walk, true, 3000);
+  bedMusic();
   G._midSaid = G._midSaid || {};
   if(G.remote){ return scrWalkRemote(w,sp); }
   var h='';
@@ -1319,7 +1339,7 @@ function arriveNow(){
   FIX=[]; if(G) G.nearHit=0;
   if(!G || G.phase!=='walk') return;
   sfx('snap', VOL.snap);
-  busStop('layer',1200); busStop('under',1200); busStop('music',1500);
+  busStop('layer',1200); busStop('under',1200);
   G.phase='arrive'; save(); route();
 }
 function scrArrive(){
