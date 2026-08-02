@@ -240,7 +240,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.8.7";
+var VERSION = "v1.9.2";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -673,7 +673,7 @@ function locked(){ var t=Date.now(); if(t-LOCK<450) return true; LOCK=t; return 
 /* ===== 소리 버스 =====
    BGM 두 채널: music(오프닝·엔딩) / layer(재봉틀·앰비언스)
    파일이 없어도 게임은 그대로 진행된다 */
-var VOL = { opening:0.30, ending:0.42, sewing:0.20, amb:0.18, snap:0.55 };
+var VOL = { opening:0.30, ending:0.42, sewing:0.20, amb:0.18, snap:0.55, walk:0.20 };
 var BUS = { music:null, layer:null, under:null };
 
 function fadeTo(a, target, ms, done){
@@ -891,7 +891,7 @@ function scrStart(){
   html(h);
   if(G.remote || GHOST){
     document.getElementById('stbox').innerHTML='<button class="btn" id="here2">여기서 시작합니다</button>';
-    document.getElementById('here2').onclick=function(){ G.phase='intro'; G.ic=0; save(); route(); };
+    document.getElementById('here2').onclick=function(){ confirmStart(G.remote?'remote':'manual'); };
     var de0=document.getElementById('dist'), ae0=document.getElementById('acc');
     if(de0) de0.innerHTML='';
     if(ae0) ae0.textContent='';
@@ -912,7 +912,7 @@ function tickStart(){
     var d=dist(pos,sp);
     de.innerHTML = d<150 ? ('시작 지점까지 <b>'+Math.round(d)+'m</b>') : ('시작 지점까지 <b>'+(Math.round(d/10)*10)+'m</b>');
     ae.textContent='GPS 오차 약 '+Math.round(pos.acc)+'m';
-    if(d<=sp.r && !bx.innerHTML) return confirmStart(true);
+    if(d<=sp.r && !bx.innerHTML) return confirmStart('auto');
   } else {
     de.innerHTML='<b style="font-size:14px">위치를 찾는 중…</b>';
     ae.textContent='하늘이 트인 곳에서 더 잘 잡힙니다';
@@ -924,32 +924,35 @@ function tickStart(){
       '앉아서 읽기로 진행하시면 걷지 않고 이야기를 볼 수 있습니다.</div>'+
       '<button class="btn" id="far2">앉아서 읽기</button>'+
       '<button class="btn ghost sm" id="here3">그래도 여기서 시작</button>';
-    document.getElementById('far2').onclick=function(){
-      clearInterval(STtimer); G.remote=true; G.phase='intro'; G.ic=0; save(); route(); };
-    document.getElementById('here3').onclick=function(){ confirmStart(false); };
+    document.getElementById('far2').onclick=function(){ confirmStart('remote'); };
+    document.getElementById('here3').onclick=function(){ confirmStart('manual'); };
     return;
   }
   if(!bx.innerHTML && (Date.now()-stStart>12000)){
     bx.innerHTML='<button class="btn" id="here">여기가 시작 지점입니다</button>'+
       '<p class="small" style="text-align:center;margin-top:6px">파프리 공인중개사 앞에 서 계시면 눌러주세요</p>'+
       '<button class="btn ghost sm" id="far">현장이 아닙니다. 앉아서 읽기</button>';
-    document.getElementById('here').onclick=function(){ confirmStart(false); };
-    document.getElementById('far').onclick=function(){
-      clearInterval(STtimer); G.remote=true; G.phase='intro'; G.ic=0; save(); route();
-    };
+    document.getElementById('here').onclick=function(){ confirmStart('manual'); };
+    document.getElementById('far').onclick=function(){ confirmStart('remote'); };
   }
 }
-function confirmStart(auto){
+/* 모드: 'auto' 자동 도착 / 'manual' 여기가 시작 지점 / 'remote' 앉아서 읽기
+   어느 경로로 들어와도 인트로 앞에 한 박자를 둔다 */
+function confirmStart(mode){
+  if(mode===true) mode='auto'; else if(mode===false) mode='manual';
   clearInterval(STtimer);
   var sp=SPOTS[0];
-  if(pos){
+  if(mode!=='remote' && pos){
     var dLat=pos.lat-sp.lat, dLng=pos.lng-sp.lng;
     /* 60m 넘게 벌어지면 그 자리가 아니라고 보고 보정하지 않는다 */
     if(dist(pos,sp) <= 60) G.cal={dLat:dLat, dLng:dLng};
   }
-  G.remote=false; G.phase='intro'; G.ic=0; save();
-  var msg = auto ? '시작 지점에 도착했습니다.' : '기준을 여기로 맞췄습니다.';
-  var sub = G.cal ? ('이 위치를 기준으로 나머지 장소를 안내합니다.') : ('');
+  G.remote=(mode==='remote'); G.phase='intro'; G.ic=0; save();
+  var msg = mode==='auto'   ? '시작 지점에 도착했습니다.'
+          : mode==='remote' ? '앉아서 읽기로 시작합니다.'
+          :                   '기준을 여기로 맞췄습니다.';
+  var sub = mode==='remote' ? '걷지 않고 이야기만 따라갑니다.'
+          : (G.cal ? '이 위치를 기준으로 나머지 장소를 안내합니다.' : '');
   html('<div class="wrap" style="padding-top:22vh"><p class="see serif">'+msg+(sub?'<br><br><span style="font-size:14px;opacity:.7">'+sub+'</span>':'')+'</p><p class="tapHint">화면을 누르면 시작됩니다</p></div>', true);
   tapNext(function(){ route(); });
 }
@@ -1193,6 +1196,9 @@ function scrWalk(){
   var w=WALK[G.wi], sp=SPOTS[w.to];
   busStop('under',800);
   busPlay('layer','amb',VOL.amb,true,2000);
+  /* 걷기 BGM. 전반(1·2번 지점) / 후반(3·4·5번 지점) 두 곡.
+     music 버스는 걷는 동안 비어 있고 duck()이 이미 이 버스를 잡는다 */
+  busPlay('music', G.wi<=1?'walk_1':'walk_2', VOL.walk, true, 3000);
   G._midSaid = G._midSaid || {};
   if(G.remote){ return scrWalkRemote(w,sp); }
   var h='';
@@ -1313,7 +1319,7 @@ function arriveNow(){
   FIX=[]; if(G) G.nearHit=0;
   if(!G || G.phase!=='walk') return;
   sfx('snap', VOL.snap);
-  busStop('layer',1200); busStop('under',1200);
+  busStop('layer',1200); busStop('under',1200); busStop('music',1500);
   G.phase='arrive'; save(); route();
 }
 function scrArrive(){
