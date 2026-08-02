@@ -240,7 +240,7 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.8.5";
+var VERSION = "v1.8.7";
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -691,7 +691,7 @@ function busPlay(ch, name, vol, loop, fadeMs){
   if(cur && cur._name===name) return cur;      /* 이미 같은 곡이 돌고 있음 */
   busStop(ch, fadeMs||600);
   var a=new Audio('audio/'+name+'.mp3');
-  a._name=name; a.loop=(loop!==false); a.preload='auto'; a.volume=0;
+  a._name=name; a._base=vol; a.loop=(loop!==false); a.preload='auto'; a.volume=0;
   a.onerror=function(){ if(BUS[ch]===a) BUS[ch]=null; };
   BUS[ch]=a;
   var p=a.play();
@@ -713,9 +713,11 @@ function sfx(name, vol){
 }
 /* 나레이션이 나올 때 음악을 낮춘다 */
 function duck(on){
-  if(BUS.music) fadeTo(BUS.music, on?VOL.opening*0.35:VOL.opening, 500);
-  if(BUS.layer && BUS.layer._name==='sewing') fadeTo(BUS.layer, on?VOL.sewing*0.32:VOL.sewing, 500);
-  if(BUS.under) fadeTo(BUS.under, on?VOL.amb*0.6:VOL.amb, 500);
+  function d(a, k){ if(!a) return; var b=(a._base===undefined?a.volume:a._base);
+                    fadeTo(a, on ? b*k : b, 500); }
+  d(BUS.music, 0.35);
+  if(BUS.layer && BUS.layer._name==='sewing') d(BUS.layer, 0.32);
+  d(BUS.under, 0.6);
 }
 function stopAllAudio(){ busStop('music',300); busStop('layer',300); busStop('under',300); stopVoice(); }
 /* 오프닝 음악 점화. 타이틀~인트로에서만 동작한다.
@@ -973,7 +975,7 @@ function scrIntro(){
     if(e){ e.textContent='화면을 누르면 계속됩니다'; e.style.opacity='1'; }
   }
   /* 1컷: 재봉틀 소리가 깔렸다가 "팔았다"에서 멎는다 */
-  if(n===1) busPlay('layer','sewing',VOL.sewing,true,2500);
+  if(n===1) busPlay('layer','sewing',VOL.sewing*0.8,true,2500);  /* 인트로는 더 뒤로 */
   else if(n===2) busStop('layer',2200);
   duck(true);
   playVoice(vid(n), function(){ duck(false); reveal(); });
@@ -1118,7 +1120,9 @@ function scrBeat(){
 function pick(i){
   var s=S[G.si], b=s.beats[G.bi], c=b.ch[i];
   /* 미싱을 가진 사람 앞에서 솔직할 때만 그 소리가 돌아온다 */
-  if(G.si===2 && G.bi===2 && c[4]===1) busPlay('layer','sewing',VOL.sewing,true,2000);
+  /* 김씨가 그 소리를 그리워한다고 처음 인정하는 순간.
+     대화 비트에는 나레이션이 없어 덕킹이 안 걸리므로 낮게, 그리고 길게 스미도록 */
+  if(G.si===2 && G.bi===2 && c[4]===1) busPlay('layer','sewing',0.13,true,7000);
   G.pR+=c[2]; G.pV+=c[3]; G.pS+=c[4]; G.sok+=c[4];
   G.seen=(G.seen||0)+1;
   if(c[5]==='elder'){ G.elder=true; G.elderNow=true; }
