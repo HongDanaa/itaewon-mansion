@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#F0EADB">
-<link rel="icon" type="image/png" sizes="32x32" href="img/icon-32.png">
-<link rel="icon" type="image/png" sizes="64x64" href="img/icon-64.png">
-<link rel="apple-touch-icon" sizes="180x180" href="img/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/icon-32.png?v=1">
+<link rel="icon" type="image/png" sizes="64x64" href="img/icon-64.png?v=1">
+<link rel="apple-touch-icon" sizes="180x180" href="img/icon-180.png?v=1">
 <title>이태원 맨션</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -106,7 +106,8 @@ button{font-family:inherit;cursor:pointer}
   border:1px solid var(--line);color:var(--ink3);font-family:var(--f-mono);
   font-size:11px;text-align:center;min-height:46px;line-height:46px;
   margin:14px 0 12px;overflow:hidden}
-.lm img{display:block;width:100%;height:auto;max-height:44vh;object-fit:contain;
+.lm.has{aspect-ratio:16/9;min-height:0;line-height:0}
+.lm img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;
   filter:saturate(.78) contrast(1.03)}
 .lm .lmcap{position:absolute;left:0;right:0;bottom:0;padding:8px 10px;line-height:1.3;
   font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;color:#F0EADB;
@@ -240,7 +241,10 @@ body.night .btn.ghost{color:#9FB39C;border-color:#4A463E}
 <div id="app"><div class="wrap" id="scr"></div></div>
 
 <script>
-var VERSION = "v1.10.0";
+var VERSION = "v1.10.2";
+/* 이미지 캐시 무효화. 같은 파일명으로 이미지를 갈아끼워도
+   버전이 오르면 브라우저가 새로 받는다 */
+var IMGV = '?v=' + VERSION;
 
 /* ===== 좌표 (?survey=1 로 수집) ===== */
 var SPOTS = [
@@ -1049,7 +1053,7 @@ function scrChapter(){
   var s=S[G.si];
   var h='<div class="chapCard">';
   h+='<p class="chapNum">'+ORD[G.si]+' 번째 만남</p>';
-  h+='<div class="chapPort"><img src="img/ch_'+G.si+'.jpg" alt="" '+
+  h+='<div class="chapPort"><img src="img/ch_'+G.si+'.jpg'+IMGV+'" alt="" '+
      'onerror="this.style.display=\'none\';this.parentNode.classList.add(\'noimg\');this.parentNode.setAttribute(\'data-i\',\''+s.ini+'\')"></div>';
   h+='<p class="chapName">'+s.name+'</p>';
   h+='<p class="chapSub">'+(s.sub||'')+'</p>';
@@ -1201,15 +1205,16 @@ function scrSettle(){
 /* 지점 사진. img/lm_N.jpg 가 없으면 글자만 남는다 */
 /* 대화 화면의 작은 인물 초상. 이미지가 없으면 이니셜 글자로 */
 function chipBox(i, ini){
-  return '<div class="chip"><img src="img/ch_'+i+'.jpg" alt="" '+
+  return '<div class="chip"><img src="img/ch_'+i+'.jpg'+IMGV+'" alt="" '+
     'onerror="this.style.display=\'none\';this.parentNode.classList.add(\'noimg\');'+
     'this.parentNode.setAttribute(\'data-i\',\''+ini+'\')"></div>';
 }
 
 function lmBox(i, name, cap){
   cap = (cap===undefined) ? ('다음 지점 · '+name) : cap;
-  return '<div class="lm"><img src="img/lm_'+i+'.jpg" alt="" loading="lazy" '+
-    'onerror="this.onerror=null;this.src=\'img/lm_'+i+'.png\';this.setAttribute(\'data-f\',1);'+
+  return '<div class="lm"><img src="img/lm_'+i+'.jpg'+IMGV+'" alt="" loading="lazy" '+
+    'onload="this.parentNode.classList.add(\'has\')" '+
+    'onerror="this.onerror=null;this.src=\'img/lm_'+i+'.png'+IMGV+'\';this.setAttribute(\'data-f\',1);'+
     'if(this.getAttribute(\'data-f2\')){this.style.display=\'none\';this.parentNode.textContent=\''+name.replace(/'/g,"")+'\';}else{this.setAttribute(\'data-f2\',1);}">'+
     '<span class="lmcap">'+cap+'</span></div>';
 }
